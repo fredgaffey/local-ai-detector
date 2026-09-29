@@ -59,8 +59,8 @@ WHAT IT DOES
 • On YouTube, reads the video's transcript and, experimentally, samples the
   audio itself to flag likely AI narration — nothing about the video or
   audio ever leaves the device.
-• A fast automatic check runs by default; a one-click "Deep check" runs
-  every detector for a fuller read.
+• A fast automatic check runs by default; a one-click "Deep check" reads the
+  whole page with the best-measured detector pair.
 
 WHY IT'S DIFFERENT
 
@@ -71,9 +71,10 @@ WHY IT'S DIFFERENT
   fetching one image's bytes to check it. Full accounting in our privacy
   policy.
 • Honest about accuracy. This is not a forensic tool and doesn't pretend to
-  be one. It's tuned so the slop filter would rather let filler through than
-  hide a real person: on held-out web text, 99% of what it hides is AI, and it
-  catches about half. Paraphrased or edited text mostly passes.
+  be one. On held-out web text the default detectors flag about two-thirds of
+  AI-written texts and about 5% of human ones; the slop filter is stricter (99%
+  of what it hides is AI, and it catches about half). Paraphrased or edited
+  text mostly passes, and a low score means "no strong AI signal", not "human".
   We publish the actual numbers and their limitations rather than a vague
   "99% accurate" claim.
 • Fully open source (MIT licence). Every model and library it bundles is

@@ -31,7 +31,7 @@ The extension's own bundled content script runs on every page so the default Qui
 
 ## YouTube page-world script (`world: "MAIN"` on `www.youtube.com` / `m.youtube.com`)
 
-A second, small bundled script runs in YouTube's own page context. YouTube only serves caption text to its own player, so to read a video's transcript this script asks the player for the current video's caption track (switching captions on invisibly for a moment when they are off, then switching them back and restoring the viewer's saved caption settings), and hands the text to the extension's content script. It requests nothing except youtube.com's own caption files, has no access to extension APIs, and sends nothing anywhere else.
+A second, small bundled script runs in YouTube's own page context. YouTube only serves caption text to its own player, so to read a video's transcript this script asks the player for the current video's caption track (switching captions on invisibly for a moment when they are off, then switching them back and restoring the viewer's saved caption settings), and hands the text to the extension's content script. For the voice check it also keeps a read-only copy of the audio segments the YouTube player itself downloads (it reads a clone of the player's own responses; the player's data is untouched and nothing extra is fetched), so a clip can be scored at original speed whatever the playback rate. It requests nothing except youtube.com's own caption files, has no access to extension APIs, and sends nothing anywhere else.
 
 ## Optional permission
 
