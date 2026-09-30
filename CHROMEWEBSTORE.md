@@ -23,20 +23,32 @@ listing claim changes** (the built `.output/chrome-mv3/manifest.json` is the sou
   `https://github.com/*`, `https://release-assets.githubusercontent.com/*` (voice model from the
   `models-v1` release, sha256-verified)
 - **optional_host_permissions:** `<all_urls>`, granted per site on click, for image provenance checks; if granted for all sites, also used to add the content script to already-open tabs after an update
-- **content_scripts:** `<all_urls>`, for the local Quick check and chip. Causes the install warning
-  "Read and change all your data on all websites".
+- **content_scripts:** a curated list of ~115 sites (`src/shared/autoSites.ts`: forums, social,
+  blogging platforms, reviews, reference, news), each host plus subdomains, for the automatic local
+  Quick check and card. Any other site works on demand: the toolbar button, right-click menu and
+  shortcuts grant `activeTab` and the script is injected into that tab. The Firefox build keeps
+  `<all_urls>`. Install warning: "Read and change your data on a number of websites".
 - **content_scripts (page world):** `*://www.youtube.com/*`, `*://m.youtube.com/*`, `world: MAIN`,
   `document_start`. Reads the current video's captions through YouTube's own player so the
   transcript check works (YouTube no longer serves caption files to plain requests). Talks only
   to youtube.com, uses no extension APIs, and restores the viewer's caption settings afterwards.
-  No new permission or install warning (already covered by `<all_urls>`).
+  No new permission or install warning (youtube.com is on the curated list).
 - **commands:** analyze-page, analyze-selection, toggle-visibility (defaults Alt+Shift+A/S/V; Control+Shift+A/S/V on macOS)
 - **CSP:** `script-src 'self' 'wasm-unsafe-eval'; object-src 'self'` (WASM bundled, no remote code)
 
 ## Review risks to expect
 
-- **Broad site access** (content script on `<all_urls>`): justified by the automatic local
-  check. Expect a longer review; the justification is in store/permissions.md.
+- **Site access** (content script on the curated list): the first Chrome release avoids
+  `<all_urls>` so it isn't held for the in-depth review broad host access triggers.
+
+## Host access
+
+v0.2.0 (Chrome) auto-runs only on the curated list. The next version restores all-sites
+auto-run. Adding `<all_urls>` to the required content-script matches in an update would make
+Chrome disable the extension for existing users until they accept the new warning, so plan it
+as an opt-in instead: an "Auto-check on all sites" switch that requests the already-declared
+optional `<all_urls>` permission and registers the content script with
+`scripting.registerContentScripts`. That needs no manifest permission change.
 - **Large runtime downloads** (models from Hugging Face and GitHub): these are data, not code.
   All executable code (JS and WASM) ships in the package.
 

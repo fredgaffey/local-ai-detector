@@ -59,6 +59,7 @@ WHAT IT DOES
 • On YouTube, reads the video's transcript and, experimentally, samples the
   audio itself to flag likely AI narration — nothing about the video or
   audio ever leaves the device.
+• On about 115 popular sites (Reddit, Hacker News, YouTube, Medium, Substack, LinkedIn, X, Amazon reviews, Wikipedia, major news and more) it checks automatically; on any other site, click the toolbar button or right-click.
 • A fast automatic check runs by default; a one-click "Deep check" reads the
   whole page with the best-measured detector pair.
 

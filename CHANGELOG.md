@@ -4,6 +4,8 @@ All notable changes to this project are documented here.
 
 ## [0.2.0] — 2026-09-30
 
+- Chrome: the automatic check runs on a curated list of ~115 sites (forums, social, blogs, reviews, reference, news). On any other site, click the toolbar button, use the right-click menu or a shortcut. Firefox still runs everywhere.
+
 - Quick check reads at most ~1,024 tokens (setting: Tiers → Quick check length); the Deep check (↻) still reads the whole page. Keeps long pages fast, notably on Firefox.
 
 **First public release.** There is no public 0.1.0 — that version number was

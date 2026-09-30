@@ -4,9 +4,14 @@
 // pill, tooltips and hidden-Unicode markers.
 
 import { bootContentScript } from "@/src/content";
+import { autoSiteMatches } from "@/src/shared/autoSites";
 
 export default defineContentScript({
-  matches: ["<all_urls>"],
+  // Chrome: the curated auto-run list (src/shared/autoSites.ts); other sites
+  // get the script on demand. The e2e build adds its localhost fixtures.
+  matches: import.meta.env.FIREFOX
+    ? ["<all_urls>"]
+    : [...autoSiteMatches(), ...(import.meta.env.MODE === "e2e" ? ["http://localhost/*"] : [])],
   main() {
     try {
       bootContentScript();
