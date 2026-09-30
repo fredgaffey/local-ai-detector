@@ -66,8 +66,9 @@ WHY IT'S DIFFERENT
 
 • 100% local. All analysis — text scoring, image checks — runs in your
   browser. The only network requests this extension ever makes are
-  downloading AI models from Hugging Face (once, after you consent, ~35–400
-  MB depending on the detectors you pick) and, only for a site you've explicitly allowed,
+  downloading AI models (once, after you consent, ~35–400 MB depending on
+  the detectors you pick) from Hugging Face and, for the voice model, this
+  project's GitHub release, and, only for a site you've explicitly allowed,
   fetching one image's bytes to check it. Full accounting in our privacy
   policy.
 • Honest about accuracy. This is not a forensic tool and doesn't pretend to
