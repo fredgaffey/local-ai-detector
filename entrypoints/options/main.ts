@@ -1115,11 +1115,13 @@ function renderProvenanceSection(): HTMLElement {
       h(
         "div",
         { class: "field-main" },
-        h("span", { class: "field-label" }, "Allow checking images on every site"),
+        h("span", { class: "field-label" }, "Run on every site"),
         h(
           "span",
           { class: "field-hint" },
-          "Optional. Without it, images are only checked on sites you allow one by one from the popup (“Allow image checks on …”). Image bytes are read locally to look for provenance data and never sent anywhere.",
+          import.meta.env.FIREFOX
+            ? "Optional. Lets images be checked on every site; without it, you allow sites one by one from the popup (“Allow image checks on …”). Image bytes are read locally and never sent anywhere."
+            : "Optional. Without it, the automatic check runs on a built-in list of popular sites and anywhere else when you click the toolbar button; images are checked on sites you allow one by one. With it, both work on every site. Everything is still read locally and never sent anywhere; Auto-run and per-site settings above still apply. Remove it any time from the browser's extension settings.",
         ),
       ),
       h(

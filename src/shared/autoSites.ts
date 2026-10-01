@@ -4,9 +4,9 @@
 // activeTab, and the router injects the same script into that tab
 // (src/engine/router.ts). Firefox keeps <all_urls>.
 //
-// A curated list keeps the first Chrome Web Store release out of the
-// in-depth review that broad host access triggers; all-sites auto-run comes
-// back as an opt-in in a later version (CHROMEWEBSTORE.md "Host access").
+// A curated list keeps the install warning narrow. "Run on every site" (the
+// optional <all_urls> permission) adds the same script everywhere else:
+// src/engine/allSites.ts.
 //
 // Chosen for where AI-written text turns up: forums and comments, social
 // posts, blogging platforms, Q&A, reviews, news and reference.
@@ -131,4 +131,10 @@ export const AUTO_SITES: readonly string[] = [
 /** Match patterns for the host and its subdomains, http and https. */
 export function autoSiteMatches(sites: readonly string[] = AUTO_SITES): string[] {
   return sites.flatMap((h) => [`*://${h}/*`, `*://*.${h}/*`]);
+}
+
+/** True when the manifest script already runs on this hostname (the host or a subdomain). */
+export function isAutoSite(hostname: string, sites: readonly string[] = AUTO_SITES): boolean {
+  const host = hostname.toLowerCase().replace(/\.$/, "");
+  return sites.some((s) => host === s || host.endsWith(`.${s}`));
 }

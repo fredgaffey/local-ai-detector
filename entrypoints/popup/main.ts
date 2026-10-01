@@ -40,6 +40,7 @@ import { VOICE_MODELS, VOICE_MODEL_IDS } from "@/src/engine/voiceModels";
 import { isVoiceProgress, type VoiceRequest, type VoiceResponse } from "@/src/voice/protocol";
 import type { VoiceModelId } from "@/src/voice/aggregate";
 import { getSiteTally } from "@/src/content/siteMemory";
+import { isAutoSite } from "@/src/shared/autoSites";
 import { describeVerdict, PAGE_TYPE_OVERRIDES, type PageTypeOverride, type PageVerdict } from "@/src/content/pageType";
 import { collapsedSummary, hoverLines, type CardState } from "@/src/content/cardSummary";
 import type { FusionDetector } from "@/src/shared/settings";
@@ -78,6 +79,8 @@ interface Ctx {
   siteTally: { high: number; total: number } | null;
   /** Probed: a PDF (even without ".pdf" in the URL) or a page we can't script. */
   unreadable: UnreadableKind | null;
+  /** Chrome: whether the optional all-sites permission is granted (null until known). */
+  allSites: boolean | null;
   /** What the corner card knows about this page (the content script's own state). */
   card: CardState | null;
 }
@@ -106,6 +109,7 @@ const ctx: Ctx = {
   siteTally: null,
   card: null,
   unreadable: null,
+  allSites: null,
 };
 
 const root = document.getElementById("app") as HTMLDivElement;
@@ -117,6 +121,15 @@ async function main() {
   ctx.tabId = tab?.id ?? null;
   ctx.tabUrl = tab?.url ?? null;
   render();
+  if (!import.meta.env.FIREFOX) {
+    void browser.permissions
+      .contains({ origins: ["<all_urls>"] })
+      .then((granted) => {
+        ctx.allSites = granted;
+        render();
+      })
+      .catch(() => {});
+  }
 
   if (ctx.tabId !== null) {
     const tabId = ctx.tabId;
@@ -614,6 +627,7 @@ function renderMain(): HTMLElement {
     renderQuickSelects(),
     renderPageTypeRow(),
     renderNeverOnSite(),
+    renderAllSitesOffer(),
     renderPasteSection(),
   );
   body.append(more);
@@ -869,6 +883,36 @@ function renderNeverOnSite(): HTMLElement | null {
     },
     never ? `Auto-run off on ${hostname} ✓` : `Never auto-run on ${hostname}`,
   );
+}
+
+/**
+ * Chrome, on a site outside the built-in auto-run list: offer to run on every
+ * site (the optional all-sites permission; background registers the script).
+ */
+function renderAllSitesOffer(): HTMLElement | null {
+  if (import.meta.env.FIREFOX || ctx.allSites !== false) return null;
+  const hostname = tabHostname();
+  if (!hostname || isAutoSite(hostname)) return null;
+  return h(
+    "button",
+    {
+      class: "btn btn-ghost btn-small",
+      type: "button",
+      title: "Run the automatic check on every site, not just the built-in list. Chrome asks to confirm.",
+      onclick: () => void requestAllSites(),
+    },
+    "Auto-check on every site",
+  );
+}
+
+async function requestAllSites(): Promise<void> {
+  try {
+    ctx.allSites = await browser.permissions.request({ origins: ["<all_urls>"] });
+  } catch {
+    // Prompt dismissed or unsupported.
+  }
+  if (ctx.allSites) showToast("Now runs on every site.");
+  render();
 }
 
 function tabHostname(): string | null {
