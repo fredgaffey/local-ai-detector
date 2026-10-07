@@ -22,7 +22,7 @@ listing claim changes** (the built `.output/chrome-mv3/manifest.json` is the sou
 - **host_permissions (fetch only):** `https://huggingface.co/*`, `https://*.hf.co/*` (text models);
   `https://github.com/*`, `https://release-assets.githubusercontent.com/*` (voice model from the
   `models-v1` release, sha256-verified)
-- **optional_host_permissions:** `<all_urls>`, granted per site on click, for image provenance checks; if granted for all sites, also used to add the content script to already-open tabs after an update
+- **optional_host_permissions:** `<all_urls>`, granted per site on click for image provenance checks, or for every site via "Run on every site" (Options, or the popup on an unlisted site). Granted for every site, it also registers the content script everywhere (`scripting.registerContentScripts`, `src/engine/allSites.ts`) and adds it to already-open tabs
 - **content_scripts:** a curated list of ~115 sites (`src/shared/autoSites.ts`: forums, social,
   blogging platforms, reviews, reference, news), each host plus subdomains, for the automatic local
   Quick check and card. Any other site works on demand: the toolbar button, right-click menu and
@@ -43,14 +43,11 @@ listing claim changes** (the built `.output/chrome-mv3/manifest.json` is the sou
 
 ## Host access
 
-v0.2.0 (Chrome) auto-runs only on the curated list. The next version restores all-sites
-auto-run. Adding `<all_urls>` to the required content-script matches in an update would make
-Chrome disable the extension for existing users until they accept the new warning, so plan it
-as an opt-in instead: an "Auto-check on all sites" switch that requests the already-declared
-optional `<all_urls>` permission and registers the content script with
-`scripting.registerContentScripts`. That needs no manifest permission change.
-- **Large runtime downloads** (models from Hugging Face and GitHub): these are data, not code.
-  All executable code (JS and WASM) ships in the package.
+v0.2.0 (Chrome) auto-runs only on the curated list. v0.3.0 adds "Run on every site": granting
+the already-declared optional `<all_urls>` permission registers the content script for every
+other site with `scripting.registerContentScripts`; revoking it unregisters it. The manifest is
+unchanged, so the install warning stays the same and the update doesn't disable the extension
+for existing users (which adding `<all_urls>` to the required content-script matches would).
 
 ## Pre-submission checklist
 

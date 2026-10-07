@@ -37,7 +37,7 @@ A second, small bundled script runs in YouTube's own page context. YouTube only 
 
 | Permission | Why | What it does *not* do |
 |---|---|---|
-| `optional_host_permissions`: `<all_urls>` | Lets the extension fetch **one image's bytes** to check it for C2PA Content Credentials, generator metadata, or an invisible watermark — but **only for an origin you've explicitly granted**, one site at a time, via the "Allow image checks on `<site>`" button in the popup. At install, this permission is granted for **zero** sites. | Never used for page text (that's read directly from the DOM by the content script, no fetch/host permission involved), never granted automatically, never requested without a visible browser permission prompt tied to a click. Turning off "Check images" in Options stops this feature from asking at all. |
+| `optional_host_permissions`: `<all_urls>` | Lets the extension fetch **one image's bytes** to check it for C2PA Content Credentials, generator metadata, or an invisible watermark — but **only for an origin you've explicitly granted**, one site at a time, via the "Allow image checks on `<site>`" button in the popup. At install, this permission is granted for **zero** sites. Chrome: granting it for every site ("Run on every site" in Options, or the popup's "Auto-check on every site") also runs the automatic local check on every site, not just the built-in list. | Never used for page text (that's read directly from the DOM by the content script, no fetch/host permission involved), never granted automatically, never requested without a visible browser permission prompt tied to a click. Turning off "Check images" in Options stops this feature from asking at all. |
 
 ## Content Security Policy
 

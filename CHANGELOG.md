@@ -2,6 +2,10 @@
 
 All notable changes to this project are documented here.
 
+## [0.3.0] — 2026-10-07
+
+- Chrome: **Run on every site** (Options, or "Auto-check on every site" in the popup on a site outside the built-in list). One browser permission prompt; the automatic check and image checks then work on every site. Revoke it any time from Chrome's extension settings. Nothing about what's read or sent changes: everything stays on your device.
+
 ## [0.2.0] — 2026-09-30
 
 - Chrome: the automatic check runs on a curated list of ~115 sites (forums, social, blogs, reviews, reference, news). On any other site, click the toolbar button, use the right-click menu or a shortcut. Firefox still runs everywhere.

@@ -100,6 +100,10 @@ narrowly as the platform allows:
   "permission needed," nothing is fetched, and the popup shows an
   "Allow image checks on `<site>`" button you can click to grant it for that
   site (a real, user-visible browser permission prompt — not silent).
+  In Chrome, "Run on every site" grants the same permission for every
+  site at once; it then also runs the automatic local text check on every
+  site instead of only the built-in list. You can revoke it any time from
+  the browser's extension settings.
 - The fetch omits cookies (`credentials: "omit"`) and reads at most ~25 MB.
 - The bytes are decoded and analyzed **entirely locally**, in the same
   on-device engine as text analysis. They are never uploaded anywhere, never
