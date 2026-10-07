@@ -5,6 +5,7 @@
 // AI narration; click a tick to seek) and one line of technical detail.
 // Closed shadow DOM. The lead may later merge this into the transcript chip.
 
+import { pageTheme } from "../content/pageTheme";
 import { scoreColor } from "../content/colors";
 import { visibleVideoTitle } from "../content/youtube/ui";
 import { formatVoice } from "./aggregate";
@@ -28,14 +29,7 @@ export interface VoiceChipApi {
   destroy(): void;
 }
 
-function theme(): "light" | "dark" {
-  try {
-    if (document.documentElement.hasAttribute("dark")) return "dark";
-    return window.matchMedia?.("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-  } catch {
-    return "light";
-  }
-}
+const theme = (): "light" | "dark" => pageTheme();
 
 /** Chip text for a state; null state = not started. Pure (tested). */
 export function voiceLabel(s: VoiceState | null): { text: string; muted: boolean; score?: number } {

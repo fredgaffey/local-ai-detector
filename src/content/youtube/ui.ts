@@ -6,6 +6,7 @@
 // timestamps (click one to seek the video) and one line of technical detail.
 // Closed shadow DOM, so page CSS can't leak in or out.
 
+import { pageTheme } from "../pageTheme";
 import { formatTimestamp } from "./transcript";
 import type { TranscriptReport } from "../../shared/transcript";
 import { FLAGGED_THRESHOLD } from "../../shared/thresholds";
@@ -28,14 +29,7 @@ export interface TranscriptChipApi {
   destroy(): void;
 }
 
-function theme(): "light" | "dark" {
-  try {
-    if (document.documentElement.hasAttribute("dark")) return "dark";
-    return window.matchMedia?.("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-  } catch {
-    return "light";
-  }
-}
+const theme = (): "light" | "dark" => pageTheme();
 
 const CSS = `
   :host { all: initial; display: inline-block; vertical-align: top; margin-right: 6px; }
