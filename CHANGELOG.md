@@ -4,6 +4,11 @@ All notable changes to this project are documented here.
 
 ## [0.3.0] — 2026-10-08
 
+- **More accurate defaults.** The automatic check now uses **tabularis** (ModernBERT) instead of TMR, and the Deep check **desklib + tabularis** instead of Fakespot + TMR. On text none of the models were trained on, the Deep check's ranking rose from AUROC 0.80 to 0.95 and it wrongly flags 2% of human texts instead of 16%; on our main web test set it catches 76% of AI texts instead of 68%. The models are a larger one-time download (about 750 MB for both) and the Deep check is slower. Settings still on the old defaults move over; hand-picked sets are kept. Details: docs/calibration.md "Accuracy pass (2026-10)".
+- YouTube's Deep check reads the whole transcript instead of a ~20-minute sample.
+- Long PDFs are scored on 150 pages sampled from the ones with the most text.
+- New setting: re-check Quick results with the Deep models from N% (Options → Tiers).
+
 - **PDFs**: open the popup on a PDF and click "Check this PDF", or drop a PDF file into "Paste text". The text is read on your device with Mozilla's pdf.js and scored; sentences can't be highlighted inside the browser's PDF viewer.
 - YouTube chips follow YouTube's own light/dark theme instead of the system's.
 

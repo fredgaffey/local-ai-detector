@@ -61,7 +61,7 @@ WHAT IT DOES
 PRIVACY
 
 All analysis runs in your browser. The only downloads are the detection
-models themselves (once, after you agree, 35–400 MB depending on your
+models themselves (once, after you agree, 150–800 MB depending on your
 choices), the PDF you're viewing when you click "Check this PDF", and, only on
 a site you've explicitly allowed, the bytes of an image you ask it to check. Nothing you read is ever sent anywhere.
 

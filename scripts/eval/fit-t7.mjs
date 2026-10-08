@@ -26,8 +26,8 @@ const md = [];
 const out = { constants: {}, weights: {}, curves: {}, metrics: {} };
 const P = (...s) => md.push(s.join(""));
 
-const DETS = ["fakespot", "tmr", "lite", "modernbert", "perplexity", "binoculars"];
-const SLOT = { fakespot: "classifierFakespot", tmr: "classifier", lite: "classifierLite", modernbert: "classifierModernBert" };
+const DETS = ["desklib", "tabularis", "fakespot", "tmr", "lite", "modernbert", "perplexity", "binoculars"];
+const SLOT = { desklib: "classifierDesklib", tabularis: "classifierTabularis", fakespot: "classifierFakespot", tmr: "classifier", lite: "classifierLite", modernbert: "classifierModernBert" };
 const GENRES = ["forum", "answer", "review", "news", "blog", "social", "story", "essay", "email"];
 const SHORT = 150;
 const FLAG_FPR = 0.05;

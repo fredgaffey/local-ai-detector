@@ -132,19 +132,21 @@ rebindable keyboard shortcuts (analyze page/selection, toggle visibility).
 
 | Mode | What it runs | Notes |
 |---|---|---|
-| **Fusion** (default; was "Ensemble") | Any mix of the detectors below, combined by weighted average (default), log-odds average, majority vote or max. Default set: **Fakespot + TMR** | Every result says how many detectors agree, and flags it when they split. Options → Fusion shows the download size and speed of your mix |
+| **Fusion** (default; was "Ensemble") | Any mix of the detectors below, combined by weighted average (default), log-odds average, majority vote or max. Default set: **desklib + tabularis** (the automatic Quick pass uses tabularis alone) | Every result says how many detectors agree, and flags it when they split. Options → Fusion shows the download size and speed of your mix |
 | **Classifier** | [`tmr-ai-text-detector`](https://huggingface.co/onnx-community/tmr-ai-text-detector-ONNX) (RoBERTa-base, RAID-trained, MIT) | ~250 MB (fp16, GPU) / ~130 MB (q8, CPU) |
 | **Classifier-lite** | [`e5-small-lora-ai-generated-detector`](https://huggingface.co/onnx-community/e5-small-lora-ai-generated-detector-ONNX) (MIT) | ~35–70 MB, the weakest detector; selectable for the Quick tier but not the default |
 | **Perplexity** | [`distilgpt2`](https://huggingface.co/Xenova/distilgpt2), lower perplexity ⇒ more AI-like | Classic GPTZero-style signal; weak on its own |
 | **Binoculars** *(experimental)* | Two [`SmolLM2-135M`](https://huggingface.co/onnx-community/SmolLM2-135M-ONNX) models (base + instruct) | Cross-perplexity ratio; slow, CPU-only |
 
-Fusion-only detectors: **Fakespot** ([`fakespot-ai/roberta-base-ai-text-detection-v1`](https://huggingface.co/fakespot-ai/roberta-base-ai-text-detection-v1),
-Mozilla's RoBERTa detector, Apache-2.0, ~130 MB, CPU) — the best single detector on our web
-test set — and **ModernBERT** ([RAID + MAGE](https://huggingface.co/onnx-community/modernbert-ai-detection-raid-mage-ONNX),
+Fusion-only detectors: **desklib** ([`desklib/ai-text-detector-v1.01`](https://huggingface.co/desklib/ai-text-detector-v1.01),
+DeBERTa-v3-large, MIT, ~620 MB, CPU) — the most accurate on text it wasn't trained on — and
+**tabularis** ([`tabularisai/ai-text-detection`](https://huggingface.co/tabularisai/ai-text-detection), ModernBERT-base, MIT, ~147 MB, CPU),
+both our own ONNX exports (docs/calibration.md "Accuracy pass (2026-10)"); **Fakespot** ([`fakespot-ai/roberta-base-ai-text-detection-v1`](https://huggingface.co/fakespot-ai/roberta-base-ai-text-detection-v1),
+Mozilla's RoBERTa detector, Apache-2.0, ~130 MB, CPU; the default until v0.3) and **ModernBERT** ([RAID + MAGE](https://huggingface.co/onnx-community/modernbert-ai-detection-raid-mage-ONNX),
 Apache-2.0, ~155 MB, CPU; weaker on today's models).
 
 Runs on the GPU (WebGPU) by default, with a CPU (WASM) fallback that has its own
-calibration. Fakespot, ModernBERT and Binoculars always use the CPU.
+calibration. desklib, tabularis, Fakespot, ModernBERT and Binoculars always use the CPU.
 
 A hidden-Unicode scan (zero-width characters, tag characters, bidi controls,
 etc.) always runs alongside whichever mode is selected, and is shown
