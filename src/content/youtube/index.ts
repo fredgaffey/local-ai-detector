@@ -19,7 +19,6 @@ import { autoRunPolicyForSite, DEFAULT_SETTINGS, getSettings, setSettings, watch
 import { FLAGGED_THRESHOLD } from "../../shared/thresholds";
 import { publishDescriptionStatus, publishTranscriptStatus } from "../videoStatus";
 import { scoreDescription } from "./description";
-import { QUICK_CONFIRM_AT } from "../../shared/thresholds";
 import { toTranscriptProbability, type TranscriptReport, type TranscriptSegment } from "../../shared/transcript";
 import { fusionForTier } from "../../engine/models";
 import { decidePowerAction, readBatteryState, readPressureState } from "../../power/battery";
@@ -156,7 +155,7 @@ async function run(pass: "fast" | "full", allowOpen: boolean): Promise<void> {
     if (
       tier === "quick" &&
       settings.tiers.confirmQuick &&
-      (quickP ?? 0) >= QUICK_CONFIRM_AT &&
+      (quickP ?? 0) >= settings.tiers.confirmAt &&
       !(confirmSet.length === fusion.detectors.length && confirmSet.every((d) => fusion.detectors.includes(d)))
     ) {
       try {

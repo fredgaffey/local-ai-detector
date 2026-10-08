@@ -354,6 +354,11 @@ export interface TierSettings {
    * flags; cuts human pages shown as AI (docs/calibration.md).
    */
   confirmQuick: boolean;
+  /**
+   * Re-check from this shown P(AI) up (0..0.95). Lower re-checks more pages
+   * (the "can't tell" middle too) at the cost of more Fusion runs.
+   */
+  confirmAt: number;
 }
 
 export interface Settings {
@@ -379,6 +384,7 @@ export const DEFAULT_TIERS: TierSettings = {
   quickMaxTokens: 1024,
   autoRunQuick: true,
   confirmQuick: true,
+  confirmAt: 0.5,
 };
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -548,6 +554,10 @@ export function sanitizeTiers(t: Partial<TierSettings> | undefined): TierSetting
         : DEFAULT_TIERS.quickMaxTokens,
     autoRunQuick: t?.autoRunQuick ?? DEFAULT_TIERS.autoRunQuick,
     confirmQuick: t?.confirmQuick ?? DEFAULT_TIERS.confirmQuick,
+    confirmAt:
+      typeof t?.confirmAt === "number" && Number.isFinite(t.confirmAt)
+        ? Math.min(0.95, Math.max(0, Math.round(t.confirmAt * 100) / 100))
+        : DEFAULT_TIERS.confirmAt,
   };
 }
 

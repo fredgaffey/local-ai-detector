@@ -55,14 +55,14 @@ describe("sanitizeTiers", () => {
   });
 
   it("passes through a valid value", () => {
-    const t: TierSettings = { quickDetectors: ["tmr"], deepDetectors: ["tmr", "perplexity"], autoRunQuick: false, confirmQuick: true, quickMaxTokens: 1024 };
+    const t: TierSettings = { quickDetectors: ["tmr"], deepDetectors: ["tmr", "perplexity"], autoRunQuick: false, confirmQuick: true, quickMaxTokens: 1024, confirmAt: 0.5 };
     expect(sanitizeTiers(t)).toEqual(t);
   });
 
   it("drops unknown detectors (a newer version synced in) and dedupes", () => {
     expect(
       sanitizeTiers({ quickDetectors: ["lite", "lite", "bogus" as FusionDetector], deepDetectors: ["tmr"], autoRunQuick: true }),
-    ).toEqual({ quickDetectors: ["lite"], deepDetectors: ["tmr"], autoRunQuick: true, confirmQuick: true, quickMaxTokens: 1024 });
+    ).toEqual({ quickDetectors: ["lite"], deepDetectors: ["tmr"], autoRunQuick: true, confirmQuick: true, quickMaxTokens: 1024, confirmAt: 0.5 });
   });
 
   it("never returns an empty detector list for either tier", () => {
@@ -89,14 +89,24 @@ describe("settings migration: tiers", () => {
   });
 
   it("a corrupted/foreign stored `tiers` value is sanitized rather than kept verbatim", () => {
-    const out = migrated({ tiers: { quickDetectors: ["nope" as FusionDetector], deepDetectors: [], autoRunQuick: false, confirmQuick: true, quickMaxTokens: 1024 } });
+    const out = migrated({ tiers: { quickDetectors: ["nope" as FusionDetector], deepDetectors: [], autoRunQuick: false, confirmQuick: true, quickMaxTokens: 1024, confirmAt: 0.5 } });
     // autoRunQuick: false folds into the single Auto-run control (Presence > Auto-run: Never).
-    expect(out.tiers).toEqual({ quickDetectors: DEFAULT_TIERS.quickDetectors, deepDetectors: DEFAULT_TIERS.deepDetectors, autoRunQuick: true, confirmQuick: true, quickMaxTokens: 1024 });
+    expect(out.tiers).toEqual({ quickDetectors: DEFAULT_TIERS.quickDetectors, deepDetectors: DEFAULT_TIERS.deepDetectors, autoRunQuick: true, confirmQuick: true, quickMaxTokens: 1024, confirmAt: 0.5 });
     expect(out.autoRunPolicy).toBe("never");
   });
 
   it("a valid stored choice survives migration untouched", () => {
-    const custom: TierSettings = { quickDetectors: ["tmr", "lite"], deepDetectors: ["fakespot", "tmr"], autoRunQuick: true, confirmQuick: false, quickMaxTokens: 2048 };
+    const custom: TierSettings = { quickDetectors: ["tmr", "lite"], deepDetectors: ["fakespot", "tmr"], autoRunQuick: true, confirmQuick: false, quickMaxTokens: 2048, confirmAt: 0.5 };
     expect(migrated({ tiers: custom }).tiers).toEqual(custom);
+  });
+});
+
+describe("confirmAt", () => {
+  it("clamped to 0..0.95, defaulted when missing or junk", () => {
+    expect(sanitizeTiers({ confirmAt: 0.3 }).confirmAt).toBe(0.3);
+    expect(sanitizeTiers({ confirmAt: 2 }).confirmAt).toBe(0.95);
+    expect(sanitizeTiers({ confirmAt: -1 }).confirmAt).toBe(0);
+    expect(sanitizeTiers({ confirmAt: Number.NaN }).confirmAt).toBe(DEFAULT_TIERS.confirmAt);
+    expect(sanitizeTiers({}).confirmAt).toBe(DEFAULT_TIERS.confirmAt);
   });
 });

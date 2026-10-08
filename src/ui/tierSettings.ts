@@ -64,7 +64,8 @@ export function mountTierSettings(el: HTMLElement): () => void {
       .lad-tiers .blurb { color: var(--ink-soft, #555); font-size: 0.9em; }
     </style>
     <table><thead><tr><th>Detector</th></tr></thead><tbody></tbody></table>
-    <label class="row"><input type="checkbox" class="confirm"><span>Confirm flagged Quick results with Fusion</span></label>
+    <label class="row"><input type="checkbox" class="confirm"><span>Re-check Quick results with Fusion</span></label>
+    <label class="row confirm-at"><span>…when Quick shows at least</span><input type="number" min="0" max="95" step="5" inputmode="numeric" aria-label="Re-check from this Quick percentage"><span>% AI. Lower re-checks unclear pages too (more accurate, more battery).</span></label>
     <label class="row budget"><span>Quick reads up to</span> <input type="number" min="128" max="32000" step="128" /> <span class="blurb">tokens</span></label>`;
   // Whether Quick runs automatically is controlled in one place only: Presence → Auto-run.
   el.append(root);
@@ -124,6 +125,10 @@ export function mountTierSettings(el: HTMLElement): () => void {
   confirmBox.addEventListener("change", () => {
     if (settings) save({ tiers: sanitizeTiers({ ...settings.tiers, confirmQuick: confirmBox.checked }) });
   });
+  const confirmAtBox = root.querySelector<HTMLInputElement>(".confirm-at input")!;
+  confirmAtBox.addEventListener("change", () => {
+    if (settings) save({ tiers: sanitizeTiers({ ...settings.tiers, confirmAt: Number(confirmAtBox.value) / 100 }) });
+  });
   const budgetBox = root.querySelector<HTMLInputElement>(".budget input")!;
   budgetBox.addEventListener("change", () => {
     if (settings) save({ tiers: sanitizeTiers({ ...settings.tiers, quickMaxTokens: Number(budgetBox.value) }) });
@@ -133,6 +138,8 @@ export function mountTierSettings(el: HTMLElement): () => void {
     if (!settings) return;
     for (const { column, d, box } of boxes) box.checked = columnList(settings, column).includes(d);
     confirmBox.checked = settings.tiers.confirmQuick;
+    confirmAtBox.disabled = !settings.tiers.confirmQuick;
+    if (document.activeElement !== confirmAtBox) confirmAtBox.value = String(Math.round(settings.tiers.confirmAt * 100));
     if (document.activeElement !== budgetBox) budgetBox.value = String(settings.tiers.quickMaxTokens);
   }
 

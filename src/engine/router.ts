@@ -381,7 +381,7 @@ export function runTabAnalysis(
     // and false positives"); if that can't run (models not downloaded, an
     // error), the Quick result stands.
     const sameSet = (a: readonly string[], b: readonly string[]) => a.length === b.length && a.every((d) => b.includes(d));
-    if (confirmWith?.length && !sameSet(confirmWith, fusionOverride ?? []) && needsQuickConfirm(result)) {
+    if (confirmWith?.length && !sameSet(confirmWith, fusionOverride ?? []) && needsQuickConfirm(result, settings.tiers.confirmAt)) {
       try {
         const confirmed = await runAnalyze(
           { tabId, mode: "ensemble", blocks, preferCpu, tier, fusionOverride: confirmWith, itemBlocks },

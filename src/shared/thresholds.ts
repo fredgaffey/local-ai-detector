@@ -107,7 +107,7 @@ export function toDisplayProbability(score: number, ctx: DisplayContext = {}): n
 export const QUICK_CONFIRM_AT = 0.5;
 
 /** Whether a Quick result should be confirmed: AI-leaning overall, or any item past the slop-filter threshold. */
-export function needsQuickConfirm(result: { probability?: number; sentences: { score: number }[] }): boolean {
-  if ((result.probability ?? 0) >= QUICK_CONFIRM_AT) return true;
+export function needsQuickConfirm(result: { probability?: number; sentences: { score: number }[] }, at = QUICK_CONFIRM_AT): boolean {
+  if ((result.probability ?? 0) >= at) return true;
   return result.sentences.some((s) => s.score >= FILTER_THRESHOLD);
 }
