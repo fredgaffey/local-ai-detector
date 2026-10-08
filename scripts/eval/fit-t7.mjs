@@ -67,6 +67,8 @@ function invert(det, p, cal, level) {
   const L = logit(p);
   if (SLOT[det]) {
     const c = level === "unit" ? cal.unit.classifier[SLOT[det]] : cal.classifier[SLOT[det]];
+    // No constants for this slot (e.g. a new model's unit level): the engine left the raw P(AI) as is.
+    if (!c) return L;
     return L / c.slope + c.center;
   }
   if (det === "perplexity") {

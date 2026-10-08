@@ -156,36 +156,39 @@ export const DEFAULT_MODELS: Record<ModelSlot, ModelSpec> = {
     label: "desklib AI-text detector v1.01 (DeBERTa-v3-large, RAID)",
     // Our ONNX export of desklib/ai-text-detector-v1.01 (MIT): its custom head
     // (mean pooling + one logit) rebuilt and exported as two logits [0, x], so
-    // softmax[1] == sigmoid(x); INT8 dynamic quantisation. Upstream publishes
-    // safetensors only. docs/calibration.md "Accuracy pass (2026-10)".
+    // softmax[1] == sigmoid(x). Weight-only 4-bit MatMuls (MatMulNBits, block
+    // 32) and an int8-per-row embedding table built from standard ops
+    // (scripts/models/quantize-q4.py): 8-bit dynamic quantisation broke it in
+    // ONNX Runtime's WASM build (human text scored as AI), q4 matches the
+    // full-precision model and gives identical numbers on WASM and native.
+    // Upstream publishes safetensors only. docs/calibration.md "Accuracy pass (2026-10)".
     repo: "fredgaffey/desklib-ai-text-detector-v1.01-ONNX",
     revision: "main",
     task: "text-classification",
     license: "mit",
     upstream: "desklib/ai-text-detector-v1.01",
     modelFileName: "model",
-    dtypes: { wasm: "q8", webgpuF16: "q8" },
+    dtypes: { wasm: "q4", webgpuF16: "q4" },
     wasmOnly: true,
-    // onnx/model_quantized.onnx 640,597,155 B; tokenizer.json 8,649,019 B (+ spm.model/configs 2,469,150 B).
-    sizes: { q8: 640_597_155 + 8_649_019 + 2_469_150 },
+    // onnx/model_q4.onnx 527,000,316 B; tokenizer.json 8,649,019 B (+ spm.model/configs 2,469,150 B).
+    sizes: { q4: 527_000_316 + 8_649_019 + 2_469_150 },
     maxLength: 512,
   },
   classifierTabularis: {
     slot: "classifierTabularis",
     label: "tabularis AI-text detector (ModernBERT-base)",
-    // Our ONNX export of tabularisai/ai-text-detection (MIT), INT8 dynamic
-    // quantisation. ModernBERT gave constant outputs on WebGPU in fp16 (T7),
-    // so it runs on WASM.
+    // Our ONNX export of tabularisai/ai-text-detection (MIT), weight-only
+    // 4-bit like desklib (8-bit drifted on WASM). Runs on WASM for now.
     repo: "fredgaffey/tabularis-ai-text-detection-ONNX",
     revision: "main",
     task: "text-classification",
     license: "mit",
     upstream: "tabularisai/ai-text-detection",
     modelFileName: "model",
-    dtypes: { wasm: "q8", webgpuF16: "q8" },
+    dtypes: { wasm: "q4", webgpuF16: "q4" },
     wasmOnly: true,
-    // onnx/model_quantized.onnx 150,667,614 B; tokenizer.json 3,583,387 B (+ configs).
-    sizes: { q8: 150_667_614 + 3_583_387 + 3 * KB },
+    // onnx/model_q4.onnx 108,971,496 B; tokenizer.json 3,583,387 B (+ configs).
+    sizes: { q4: 108_971_496 + 3_583_387 + 3 * KB },
     maxLength: 8192,
   },
   perplexityLM: {
