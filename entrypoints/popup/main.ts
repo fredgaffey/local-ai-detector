@@ -1028,7 +1028,7 @@ async function textFromPdfBytes(bytes: ArrayBuffer): Promise<string> {
   const { pdfToText } = await import("@/src/ui/pdfText");
   const { text, pages, pagesRead } = await pdfToText(bytes);
   if (text.replace(/\s/g, "").length < 40) throw new Error("No selectable text in this PDF (it may be a scanned image).");
-  if (pagesRead < pages) showToast(`Checked the first ${pagesRead} of ${pages} pages.`);
+  if (pagesRead < pages) showToast(`Long PDF: checked ${pagesRead} of its ${pages} pages, sampled from the ones with the most text.`);
   return text;
 }
 
