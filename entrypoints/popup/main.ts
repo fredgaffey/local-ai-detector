@@ -610,6 +610,18 @@ function renderMain(): HTMLElement {
   const useCard = cardHasResult(ctx.card) && (!ctx.result || ctx.card.pageType === "video" || ctx.card.pageType === "subtitles");
   body.append(useCard ? renderCardSection(ctx.card as CardState) : renderResultSection());
   const unreadable = ctx.unreadable ?? parseUnreadable(ctx.error) ?? (ctx.pageType ? null : classifyUrl(ctx.tabUrl));
+  if (unreadable === "pdf" && ctx.tabUrl && !ctx.pasteBusy) {
+    // The browser's PDF viewer can't be drawn on: read the file here instead.
+    body.append(
+      h(
+        "div",
+        { class: "btn-row" },
+        h("button", { class: "btn btn-primary", type: "button", onclick: () => void checkPdfTab() }, "Check this PDF"),
+      ),
+      h("p", { class: "field-hint unreadable-line" }, "Reads the PDF's text on your device and scores it. Sentences can't be highlighted inside the PDF viewer."),
+    );
+    return body;
+  }
   if (unreadable) {
     // A PDF's selected-text result: the page buttons can't work here.
     body.append(h("p", { class: "field-hint unreadable-line" }, unreadableMessage(unreadable)));
@@ -959,7 +971,7 @@ function renderPasteSection(): HTMLElement {
 
   const fileInput = h("input", {
     type: "file",
-    accept: ACCEPTED_FILE_EXTENSIONS,
+    accept: `${ACCEPTED_FILE_EXTENSIONS},.pdf`,
     class: "sr-only-file",
     onchange: (e: Event) => void onFileChosen((e.target as HTMLInputElement).files?.[0]),
   }) as HTMLInputElement;
@@ -975,7 +987,7 @@ function renderPasteSection(): HTMLElement {
         void onFileChosen(e.dataTransfer?.files?.[0]);
       },
     },
-    `Drop a ${ACCEPTED_FILE_EXTENSIONS.replaceAll(",", " / ")} file, or click to choose`,
+    `Drop a ${ACCEPTED_FILE_EXTENSIONS.replaceAll(",", " / ")} / .pdf file, or click to choose`,
     fileInput,
   );
 
@@ -1008,13 +1020,56 @@ async function analyzePastedText(text: string): Promise<void> {
   await analyzeArbitraryText(text);
 }
 
+/** Largest PDF read (bytes); bigger files are usually scans or books. */
+const MAX_PDF_BYTES = 60 * 1024 * 1024;
+
+async function textFromPdfBytes(bytes: ArrayBuffer): Promise<string> {
+  if (bytes.byteLength > MAX_PDF_BYTES) throw new Error("This PDF is too large to check (over 60 MB).");
+  const { pdfToText } = await import("@/src/ui/pdfText");
+  const { text, pages, pagesRead } = await pdfToText(bytes);
+  if (text.replace(/\s/g, "").length < 40) throw new Error("No selectable text in this PDF (it may be a scanned image).");
+  if (pagesRead < pages) showToast(`Checked the first ${pagesRead} of ${pages} pages.`);
+  return text;
+}
+
+/** "Check this PDF": fetch the tab's PDF (activeTab grants its origin), read its text, score it. */
+async function checkPdfTab(): Promise<void> {
+  const url = ctx.tabUrl;
+  if (!url) return;
+  ctx.pasteBusy = true;
+  ctx.progress = { phase: "analyze", loaded: 0, total: 0, message: "Reading PDF…" };
+  render();
+  try {
+    let bytes: ArrayBuffer;
+    try {
+      const res = await fetch(url, { credentials: "include" });
+      if (!res.ok) throw new Error(String(res.status));
+      bytes = await res.arrayBuffer();
+    } catch {
+      throw new Error(
+        url.startsWith("file:")
+          ? "Can't read local files unless “Allow access to file URLs” is on for this extension. Or drop the file into Paste text."
+          : "Couldn't download this PDF. Save it and drop it into Paste text instead.",
+      );
+    }
+    const text = await textFromPdfBytes(bytes);
+    await analyzeArbitraryText(text);
+  } catch (err) {
+    ctx.progress = null;
+    showToast(err instanceof Error ? err.message : String(err));
+  } finally {
+    ctx.pasteBusy = false;
+    render();
+  }
+}
+
 async function onFileChosen(file: File | undefined): Promise<void> {
   if (!file) return;
   ctx.pasteBusy = true;
   ctx.pasteError = null;
   render();
   try {
-    const text = await extractTextFromFile(file);
+    const text = /\.pdf$/i.test(file.name) ? await textFromPdfBytes(await file.arrayBuffer()) : await extractTextFromFile(file);
     await analyzeArbitraryText(text);
   } catch (err) {
     ctx.pasteError = err instanceof Error ? err.message : String(err);

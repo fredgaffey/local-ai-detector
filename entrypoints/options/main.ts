@@ -1159,6 +1159,7 @@ const THIRD_PARTY_LIBS: { name: string; license: string }[] = [
   { name: "onnxruntime-web", license: "MIT" },
   { name: "@contentauth/c2pa-web", license: "MIT" },
   { name: "exifreader", license: "MPL-2.0" },
+  { name: "pdfjs-dist", license: "Apache-2.0" },
   { name: "c2pa-text", license: "MIT" },
   { name: "C2PA Trust List (c2pa-org/conformance-public)", license: "CC-BY-4.0" },
   { name: "wxt (build tool)", license: "MIT" },

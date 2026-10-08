@@ -143,6 +143,17 @@ These features are entirely local, and don't change anything above:
   context menu read text already on the page (or already typed into a box);
   neither one fetches anything.
 
+### 3b. Checking a PDF you're viewing — only when you click "Check this PDF"
+
+Browsers show PDFs in a built-in viewer that extensions can't read. When you
+open the popup on a PDF tab and click **Check this PDF**, the popup downloads
+that same PDF once from the address in your tab (the browser's normal
+request, with that site's cookies, exactly as reloading the tab would),
+extracts its text locally with the bundled pdf.js, and scores it on-device.
+Nothing is fetched until you click, nothing else is downloaded, and neither
+the PDF nor its text is sent anywhere. A PDF dropped into the popup's
+"Paste text" box is read from your disk and never uploaded.
+
 ### 4. Anything else
 
 There isn't anything else. No analytics SDK, no crash/error reporting
@@ -150,8 +161,8 @@ service, no update-ping beyond the Hugging Face metadata check above, no
 "phone home" of any kind. The extension has no backend of its own —
 there is no server operated by this project. The only two remote parties
 your browser will ever talk to *because of this extension* are Hugging Face
-(models) and, only with your explicit per-site permission, whatever site
-hosts an image you asked to be checked.
+(models), and, only when you ask, the site hosting an image you allowed it to
+check or a PDF you clicked "Check this PDF" on.
 
 External links shown in the UI (e.g. "cannot be checked locally — try the
 Gemini app" for SynthID, or the AMO/Chrome Web Store install pages) are

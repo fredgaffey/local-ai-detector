@@ -64,10 +64,11 @@ FEATURES
 PRIVACY
 
 Every analysis runs locally, in your browser. The only network requests are:
-downloading/updating AI models directly from huggingface.co (once you
-consent, or when you ask to check for updates), and — only for a website
-you've explicitly granted permission to, one site at a time — fetching a
-single image's bytes to check its provenance. See our privacy policy (linked
+downloading/updating AI models directly from huggingface.co (and the voice
+model from this project's GitHub release), once you consent or when you ask to
+check for updates; downloading the PDF you're viewing when you click "Check
+this PDF"; and — only for a website you've explicitly granted permission to,
+one site at a time — fetching a single image's bytes to check its provenance. See our privacy policy (linked
 from the extension's Options page and its source repository) for the
 complete, exact accounting. This add-on declares no data collection to
 Mozilla, because it collects none.

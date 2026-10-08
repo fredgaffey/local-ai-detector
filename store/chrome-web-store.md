@@ -48,6 +48,8 @@ WHAT IT DOES
 • Checks images for signed Content Credentials (C2PA), AI-generator metadata
   and open-source invisible watermarks, and says plainly which watermarks
   can't be checked locally.
+• Checks PDFs too: open the popup on a PDF and click "Check this PDF", or drop
+  a PDF file into it.
 • Flags hidden or invisible characters in text, shown separately from the AI
   score.
 • Runs automatically on a set of popular sites with lots of user-written
@@ -60,8 +62,8 @@ PRIVACY
 
 All analysis runs in your browser. The only downloads are the detection
 models themselves (once, after you agree, 35–400 MB depending on your
-choices) and, only on a site you've explicitly allowed, the bytes of an image
-you ask it to check. Nothing you read is ever sent anywhere.
+choices), the PDF you're viewing when you click "Check this PDF", and, only on
+a site you've explicitly allowed, the bytes of an image you ask it to check. Nothing you read is ever sent anywhere.
 
 ACCURACY
 

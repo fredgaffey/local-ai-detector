@@ -31,8 +31,10 @@ button in the toolbar. It:
 - checks images on the page for C2PA Content Credentials, generator
   metadata, and known open-source invisible watermarks.
 
-Nothing leaves your machine except the one-time model download from Hugging
-Face and, if you opt in per site, the bytes of an image you ask it to check.
+Nothing leaves your machine. The only downloads are the one-time model
+downloads (Hugging Face, and this project's GitHub release for the voice
+model), the PDF you're viewing when you click "Check this PDF", and, if you opt
+in per site, the bytes of an image you ask it to check.
 See [Privacy](#privacy) for the exact, complete list of network requests.
 
 |  |  |
@@ -267,8 +269,9 @@ Known, deliberate weaknesses:
 See [`PRIVACY.md`](PRIVACY.md) for the complete, precise list of every
 network request the extension makes and when. In short: no analytics, no
 accounts, no servers of ours — the only network access is downloading/
-updating models from `huggingface.co`/`*.hf.co`, and fetching an image's
-bytes only for a site you've explicitly allowed.
+updating models from `huggingface.co`/`*.hf.co` and this project's GitHub
+release, downloading the PDF in your tab when you click "Check this PDF", and
+fetching an image's bytes only for a site you've explicitly allowed.
 
 ## Install
 

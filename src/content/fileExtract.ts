@@ -1,6 +1,6 @@
 // Local file/paste text extraction for the popup's "Paste text" box and file
-// drop (docs/plan.md "More entry points": .txt, .md, .html, .docx; PDF is
-// out of scope for v1). Extraction is local and dependency-free -- .docx is
+// drop (docs/plan.md "More entry points": .txt, .md, .html, .docx; PDFs are
+// read in the popup with pdf.js, src/ui/pdfText.ts). Extraction is local and dependency-free -- .docx is
 // read as a zip (Word doesn't use zip64 or streamed/data-descriptor entries
 // for a plain .docx, so a straightforward sequential local-file-header scan
 // is enough) and decompressed with the browser's native `DecompressionStream`

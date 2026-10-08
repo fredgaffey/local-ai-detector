@@ -88,6 +88,7 @@ function copy(src, destDir, destName = undefined) {
     "@contentauth/c2pa-utilities",
     "exifreader",
     "c2pa-text",
+    "pdfjs-dist",
   ];
   const missing = [];
   for (const pkg of packages) {
