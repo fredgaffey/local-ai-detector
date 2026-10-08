@@ -73,7 +73,7 @@ export interface TranscriptDisplayContext {
   words?: number;
 }
 
-const DEFAULT_PROFILE = "fakespot+tmr|weighted";
+const DEFAULT_PROFILE = "desklib+tabularis|weighted";
 
 function interp(xs: number[], ys: number[], x: number): number {
   if (x <= xs[0]!) return ys[0]!;
