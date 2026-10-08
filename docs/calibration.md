@@ -241,6 +241,62 @@ The WebGPU runs were done locally (Chrome 153, Apple Silicon). The WASM runs wer
 Ubuntu runners (4 vCPU, Chromium from Playwright). The eval set built in CI was identical to
 the local one (all 1,867 ids match).
 
+## Accuracy pass (2026-10): desklib + tabularis replace Fakespot + TMR
+
+**Why.** Users saw the automatic check land on the same few numbers (27%, 37%): TMR, the
+Quick model, can't separate most pages, and its honest curve maps them into 23–43%. The
+Deep pair missed recent AI text and, on text from outside our eval sources, flagged many
+humans.
+
+**Candidates** (all MIT/Apache, converted by us with [`scripts/models/`](../scripts/models/)):
+desklib/ai-text-detector-v1.01 (DeBERTa-v3-large, RAID), tabularisai/ai-text-detection
+(ModernBERT-base), ShantanuT01/vanguard (ModernBERT-large), jaspai raid-mix, rasbt (would not
+export). **Vanguard was trained on DACTYL, LLMTrace and MAGA** — all three of our human/AI
+sources — so its 0.995 on our set is contamination; on unseen text (below) it was the worst
+(0.70). Rejected.
+
+**Unseen-text check.** A fresh 961-text sample of MAGE's test split (squad, xsum, cmv, eli5,
+…; 322 human, 639 AI; not in any candidate's training data), scored in Node, operating point
+fixed on our web set's fit half (5% human FPR):
+
+| Set | Web set AUROC (test) | MAGE AUROC | MAGE humans flagged | MAGE AI caught |
+|---|---|---|---|---|
+| Fakespot + TMR (old Deep) | 0.913 | 0.814 | 18% | 63% |
+| TMR (old Quick) | 0.880 | 0.770 | 4% | 27% |
+| desklib + tabularis (new Deep) | 0.919 | **0.945** | **3%** | **71%** |
+| tabularis (new Quick) | 0.899 | **0.892** | 3% | 57% |
+
+**Quantisation trap.** ONNX Runtime's WASM build (what browsers run) computed the 8-bit
+dynamic-quantised desklib wrongly: human texts scored as AI (browser AUROC 0.84 vs 0.91
+native, logits off by up to 13 on identical inputs); tabularis drifted less. Unsigned weights
+broke it everywhere. Weight-only 4-bit (MatMulNBits, block 32) gives identical numbers on WASM
+and native and keeps the accuracy. The bundled ORT-web lacks `GatherBlockQuantized`, so the
+embedding table is int8 per row rebuilt from standard ops (Gather → Cast → Mul).
+Sizes: desklib 527 MB, tabularis 109 MB.
+
+**Browser calibration** (WASM, Chrome for Testing, all 1,867 texts; merged with the existing
+WASM runs; `fit-t7.mjs --default "desklib+tabularis|weighted"`), test half:
+
+| Set | AUROC | humans ≥ 0.5 / AI ≥ 0.5 | shown ≥ 70%: human / AI | median shown human / AI |
+|---|---|---|---|---|
+| Fakespot + TMR (old) | 0.91 | 5% / 68% | – | – |
+| desklib + tabularis (new) | **0.92** | **1% / 69%** | **2% / 75%** | 23% / 96% |
+| tabularis (Quick) | 0.90 | 5% / 67% | 6% / 71% | 24% / 94% |
+| TMR (old Quick) | 0.87 | 3% / 57% | 7% / 64% | 31% / 87% |
+
+Weak spot: human how-to/blog text (wikiHow) reads ≥ 50% for about half the texts with the new
+pair. Speed (Chrome, WASM): tabularis ~4 s and desklib ~12 s per 1,000 words.
+
+**Transcripts** (T10 set, Node, q4 builds): Deep 0.93 on punctuated captions (old 0.94) and
+0.88 on raw auto-captions (old 0.82). On long transcripts the curve's floor is ~31% while the
+test half's true rate there is ~18% (small set; shrinkage towards 50%).
+
+**Reproduce.** `scripts/models/export-onnx.py` then `scripts/models/quantize-q4.py`; serve
+with `scripts/e2e/model-mirror.mjs` and build the e2e target with
+`WXT_E2E_MODEL_MIRROR=http://127.0.0.1:8787/`; then the browser run and fit as in
+"Reproduce" above, and `score-transcripts.mjs --mode desklib+tabularis --mirror …` +
+`fit-transcripts.mjs --ship-unpunct raw --emit` (it merges into the existing curves).
+
 ## Deep check: which detectors (2026-09-28)
 
 The Deep check used to average all six detectors. That set had never been measured, so it
