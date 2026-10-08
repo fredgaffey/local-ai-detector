@@ -35,7 +35,7 @@ const RUNS = opt("--runs", "webgpu:tmr,webgpu:lite,webgpu:modernbert,webgpu:perp
     const [detector, dtype] = rest.split("@");
     return { key: r, device, detector, dtype };
   });
-const SLOT = { fakespot: "classifierFakespot", tmr: "classifier", lite: "classifierLite", modernbert: "classifierModernBert", perplexity: "perplexityLM", binoculars: ["binocularsObserver", "binocularsPerformer"] };
+const SLOT = { desklib: "classifierDesklib", tabularis: "classifierTabularis", fakespot: "classifierFakespot", tmr: "classifier", lite: "classifierLite", modernbert: "classifierModernBert", perplexity: "perplexityLM", binoculars: ["binocularsObserver", "binocularsPerformer"] };
 
 let items = JSON.parse(readFileSync(opt("--eval"), "utf8"));
 if (SPLIT !== "all") items = items.filter((r) => r.split === SPLIT);

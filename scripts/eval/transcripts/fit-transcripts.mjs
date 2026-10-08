@@ -27,7 +27,11 @@ const runs = Object.fromEntries(
     .map(([k, f]) => [k, JSON.parse(readFileSync(f, "utf8")).scores]),
 );
 const shipUnpunct = opt("--ship-unpunct", "pause");
-const PROFILE = { fusion: "fakespot+tmr|weighted", lite: "lite", tmr: "tmr" };
+const PROFILE_BASE = { fusion: "fakespot+tmr|weighted", lite: "lite", tmr: "tmr" };
+// Any other --scores key is a detector set: "a+b" (weighted Fusion) or one detector.
+const PROFILE = new Proxy(PROFILE_BASE, {
+  get: (t, k) => t[k] ?? (String(k).includes("+") ? `${String(k).split("+").sort().join("+")}|weighted` : String(k)),
+});
 
 function auroc(pos, neg) {
   if (!pos.length || !neg.length) return NaN;
@@ -157,7 +161,7 @@ for (const [mode, run] of Object.entries(runs)) {
   // (skipQuickPass), so their curves see punctuated items only. (Pooling
   // both conditions for every item, as before, let lite's near-zero scores
   // on unpunctuated AI text drag its low end up to ~40-60% AI.)
-  const quick = mode !== "fusion";
+  const quick = mode !== "fusion" && !mode.includes("+");
   const isPunct = (it) => it.punctuated === true || it.punctuated === "True";
   const pathConds = quick ? ["punct"] : ["punct", shipUnpunct].filter((c) => run[c]);
   const pointsFor = (split, len) => {
@@ -189,7 +193,10 @@ const report = md.join("\n");
 console.log(report);
 if (opt("--md")) writeFileSync(opt("--md"), report);
 if (args.includes("--emit")) {
-  const lines = Object.entries(out)
+  // Merge: curves for sets not scored in this run are kept as they are.
+  await import("../../lib/ts-hooks.mjs");
+  const { TRANSCRIPT_CURVES: existing } = await import("../../../src/shared/transcriptCalibration.ts");
+  const lines = Object.entries({ ...existing, ...out })
     .sort()
     .map(([k, c]) => `  ${JSON.stringify(k)}: { x: [${c.x.join(",")}], y: [${c.y.join(",")}] },`);
   writeFileSync(

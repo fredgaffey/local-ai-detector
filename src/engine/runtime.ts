@@ -123,6 +123,20 @@ async function doInit(opts: RuntimeOptions): Promise<RuntimeInfo> {
   // extension CSP (script-src 'self') forbids. The .wasm is bundled anyway.
   env.useWasmCache = false;
 
+  // E2E builds only (`wxt build --mode e2e`, never shipped): models not yet
+  // published can be served from a local mirror (scripts/e2e/model-mirror.mjs)
+  // by setting WXT_E2E_MODEL_MIRROR at build time. Requests keep their
+  // huggingface.co URLs as cache keys; only the bytes come from the mirror.
+  const mirror = import.meta.env.MODE === "e2e" ? (import.meta.env as Record<string, string | undefined>).WXT_E2E_MODEL_MIRROR : undefined;
+  if (mirror) {
+    const base = env.fetch;
+    const hub = "https://huggingface.co/";
+    env.fetch = (input: string | URL, init?: unknown) => {
+      const url = String(input);
+      return base(url.startsWith(`${hub}fredgaffey/`) ? mirror + url.slice(hub.length) : url, init as RequestInit);
+    };
+  }
+
   const ortBase = opts.ortBaseUrl ?? defaultOrtBaseUrl();
   const onnx = env.backends.onnx as { wasm?: Record<string, unknown> };
   if (!onnx.wasm) throw new Error("onnxruntime-web WASM backend unavailable");

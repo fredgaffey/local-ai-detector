@@ -461,9 +461,9 @@ export function refKey(ref: ModelRef): string {
 export const DETECTOR_SPEED_MS_PER_1K_WORDS: Record<FusionDetector, { webgpu: number; wasm: number }> = {
   // T7 browser runs (Chrome 153, Apple M-series, 4 WASM threads), rounded up.
   // WASM-only detectors cost the same on either path.
-  // desklib / tabularis: provisional, scaled from Node timings against Fakespot.
-  desklib: { webgpu: 17000, wasm: 17000 },
-  tabularis: { webgpu: 4300, wasm: 4300 },
+  // desklib / tabularis: accuracy-pass browser runs (Chrome, WASM q8), rounded up.
+  desklib: { webgpu: 16000, wasm: 16000 },
+  tabularis: { webgpu: 6000, wasm: 6000 },
   fakespot: { webgpu: 2500, wasm: 2500 },
   tmr: { webgpu: 400, wasm: 2500 },
   lite: { webgpu: 200, wasm: 800 },

@@ -40,10 +40,26 @@ const { DEFAULT_MODELS } = await import("../../../src/engine/models.ts");
 const { buildTranscriptBlocks, toTextBlocks } = await import("../../../src/content/youtube/chunk.ts");
 
 await initRuntime({ cacheDir: opt("--cache") });
+// --mirror <url>: fetch not-yet-published models (fredgaffey/*) from scripts/e2e/model-mirror.mjs.
+if (opt("--mirror")) {
+  const { env } = await import("@huggingface/transformers");
+  const base = env.fetch;
+  env.fetch = (u, init) => {
+    const s = String(u);
+    return base(s.startsWith("https://huggingface.co/fredgaffey/") ? opt("--mirror") + s.slice("https://huggingface.co/".length) : s, init);
+  };
+}
+const { DETECTOR_SLOTS } = await import("../../../src/engine/models.ts");
 const load = (slot) => loadModel(slot, { repo: DEFAULT_MODELS[slot].repo, revision: DEFAULT_MODELS[slot].revision });
 let mode;
 let models;
-if (modeArg === "lite") {
+// --mode a+b (or a single detector): any Fusion set, e.g. desklib+tabularis or tabularis.
+const custom = !["fusion", "lite", "tmr"].includes(modeArg) ? modeArg.split("+") : null;
+if (custom) {
+  mode = "ensemble";
+  models = {};
+  for (const d of custom) for (const slot of DETECTOR_SLOTS[d]) models[slot] = await load(slot);
+} else if (modeArg === "lite") {
   mode = "classifierLite";
   models = { classifierLite: await load("classifierLite") };
 } else if (modeArg === "tmr") {
@@ -54,7 +70,7 @@ if (modeArg === "lite") {
   mode = "ensemble";
   models = { classifierFakespot: await load("classifierFakespot"), classifier: await load("classifier") };
 }
-const fusion = { detectors: modeArg === "tmr" ? ["tmr"] : ["fakespot", "tmr"], method: "weighted" };
+const fusion = { detectors: custom ?? (modeArg === "tmr" ? ["tmr"] : ["fakespot", "tmr"]), method: "weighted" };
 
 const prev = out && existsSync(out) ? JSON.parse(readFileSync(out, "utf8")) : {};
 const res = prev.scores ?? {};
