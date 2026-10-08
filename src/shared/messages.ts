@@ -475,6 +475,8 @@ export interface AnalyzeRequest {
   fusionOverride?: FusionDetector[];
   /** While running, keep the tab's last result on show (a Deep pass refining a Quick one). */
   keepResult?: boolean;
+  /** Deep only: read the whole text, past `settings.maxTokens` (a video's full transcript). */
+  wholeText?: boolean;
 }
 
 export interface AnalyzeResult {

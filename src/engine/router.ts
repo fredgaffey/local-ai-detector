@@ -46,6 +46,9 @@ import type { EngineConfig } from "./protocol";
 
 type EngineWebgpuDtypes = EngineConfig["webgpuDtypes"];
 
+/** Upper bound for a whole-text Deep run (about 4 hours of speech); keeps a pathological input bounded. */
+const WHOLE_TEXT_MAX_TOKENS = 200_000;
+
 const tabStatus = new Map<number, TabAnalysisStatus>();
 const imageSummaries = new Map<number, ImageProvenanceSummary>();
 
@@ -199,7 +202,12 @@ async function runAnalyze(
           mode,
           minWords: settings.minWords,
           // The Quick pass (and its confirmation) is capped; Deep reads up to maxTokens.
-          maxTokens: req.tier === "quick" ? Math.min(settings.maxTokens, settings.tiers.quickMaxTokens) : settings.maxTokens,
+          maxTokens:
+            req.tier === "quick"
+              ? Math.min(settings.maxTokens, settings.tiers.quickMaxTokens)
+              : req.wholeText
+                ? Math.max(settings.maxTokens, WHOLE_TEXT_MAX_TOKENS)
+                : settings.maxTokens,
           models,
           fusion,
           itemBlocks: req.itemBlocks,

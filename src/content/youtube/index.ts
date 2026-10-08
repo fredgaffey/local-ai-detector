@@ -137,14 +137,15 @@ async function run(pass: "fast" | "full", allowOpen: boolean): Promise<void> {
     // Quick (the cheapest detectors, a sampled budget); the clicked "full"
     // pass is Deep (every detector, the whole transcript).
     const tier: "quick" | "deep" = pass === "full" ? "deep" : "quick";
-    const budget = pass === "full" ? settings.maxTokens : Math.max(300, Math.floor(settings.maxTokens * 0.7));
-    const blocks = sampleBlocks(all, budget);
+    // Deep reads the whole transcript; the automatic Quick pass a spread-out sample.
+    const blocks = pass === "full" ? all : sampleBlocks(all, Math.max(300, Math.floor(settings.maxTokens * 0.7)));
     const fusion = fusionForTier(tier, settings.tiers);
     let result = await sendMessage("analyze", {
       tabId: -1,
       mode: "ensemble",
       fusionOverride: fusion.detectors,
       tier,
+      wholeText: tier === "deep",
       blocks: toTextBlocks(blocks),
     });
     if (stale()) return;
