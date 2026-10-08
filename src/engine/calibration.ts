@@ -15,7 +15,7 @@
 
 import type { FusionDetector } from "../shared/settings";
 
-export type ClassifierSlot = "classifier" | "classifierLite" | "classifierModernBert" | "classifierFakespot";
+export type ClassifierSlot = "classifier" | "classifierLite" | "classifierModernBert" | "classifierFakespot" | "classifierDesklib" | "classifierTabularis";
 
 export interface LogitMap {
   /** p' = sigmoid(slope * (logit(p) - center)) */
@@ -71,6 +71,10 @@ export interface Calibration {
  */
 export const WASM_CALIBRATION: Calibration = {
   classifier: {
+    // Provisional two-anchor constants from the Node eval (accuracy pass 2026-10);
+    // both run on WASM. Refit by scripts/eval/fit-t7.mjs from browser runs.
+    classifierDesklib: { center: 3.667, slope: 0.735 },
+    classifierTabularis: { center: 2.699, slope: 0.91 },
     classifierFakespot: {
       center: 3.525,
       slope: 0.489,
@@ -103,6 +107,9 @@ export const WASM_CALIBRATION: Calibration = {
     wPerplexity: 0.3,
   },
   fusionWeights: {
+    // Provisional (Node, fit half; accuracy pass 2026-10): refit by fit-t7 from browser runs.
+    desklib: 1,
+    tabularis: 0.5,
     fakespot: 0.644,
     tmr: 0.093,
     lite: 0.049,
@@ -143,6 +150,10 @@ export const WASM_CALIBRATION: Calibration = {
  */
 export const WEBGPU_CALIBRATION: Calibration = {
   classifier: {
+    // Provisional two-anchor constants from the Node eval (accuracy pass 2026-10);
+    // both run on WASM. Refit by scripts/eval/fit-t7.mjs from browser runs.
+    classifierDesklib: { center: 3.667, slope: 0.735 },
+    classifierTabularis: { center: 2.699, slope: 0.91 },
     classifierFakespot: {
       center: 3.525,
       slope: 0.489,
@@ -175,6 +186,9 @@ export const WEBGPU_CALIBRATION: Calibration = {
     wPerplexity: 0.3,
   },
   fusionWeights: {
+    // Provisional (Node, fit half; accuracy pass 2026-10): refit by fit-t7 from browser runs.
+    desklib: 1,
+    tabularis: 0.5,
     fakespot: 0.656,
     tmr: 0.096,
     lite: 0.049,

@@ -31,7 +31,10 @@ export type ModelSlot =
   | "binocularsPerformer"
   // Added by T7 (fusion mode): ModernBERT RAID+MAGE and Fakespot RoBERTa classifiers.
   | "classifierModernBert"
-  | "classifierFakespot";
+  | "classifierFakespot"
+  // Added 2026-10 (accuracy pass): desklib DeBERTa-v3-large and tabularis ModernBERT classifiers.
+  | "classifierDesklib"
+  | "classifierTabularis";
 
 export interface ModelRef {
   repo: string;
@@ -272,7 +275,7 @@ export function isPaused(settings: Partial<Pick<Settings, "pausedUntil">>, now =
 // weighted) is just one possible selection.
 
 /** A detector Fusion can run. Each maps onto one or two model slots (src/engine/models.ts). */
-export type FusionDetector = "fakespot" | "tmr" | "lite" | "modernbert" | "perplexity" | "binoculars";
+export type FusionDetector = "desklib" | "tabularis" | "fakespot" | "tmr" | "lite" | "modernbert" | "perplexity" | "binoculars";
 
 /**
  * How Fusion combines the detectors' calibrated scores:
@@ -309,14 +312,14 @@ export interface Settings {
  * (AI) sentences only, not the whole-page heatmap. 6 = Deep check is Fakespot
  * + TMR over the whole page (the measured best), not all six detectors.
  */
-export const SETTINGS_VERSION = 6;
+export const SETTINGS_VERSION = 7;
 
 /**
  * Default Fusion set, chosen on the T7 web eval set (docs/calibration.md):
  * Fakespot + TMR, weighted. Adding perplexity, lite or ModernBERT did not
  * improve it by 0.01 in AUROC + TPR@1% FPR.
  */
-export const DEFAULT_FUSION: FusionSettings = { detectors: ["fakespot", "tmr"], method: "weighted" };
+export const DEFAULT_FUSION: FusionSettings = { detectors: ["desklib", "tabularis"], method: "weighted" };
 
 // ---- Added by the tiers task (additive only; see docs/plan.md "Two tiers:
 // Quick (default) and Deep (on demand)") ----
@@ -366,7 +369,10 @@ export interface Settings {
 }
 
 /** Deep's default: every detector the registry has (docs/plan.md: "Deep detectors (default: all)"). */
-export const ALL_TIER_DETECTORS: FusionDetector[] = ["fakespot", "tmr", "modernbert", "lite", "perplexity", "binoculars"];
+export const ALL_TIER_DETECTORS: FusionDetector[] = ["desklib", "tabularis", "fakespot", "tmr", "modernbert", "lite", "perplexity", "binoculars"];
+
+/** The six detectors before v7 (the old all-six Deep default the v6 migration recognises). */
+const PRE_V7_ALL_SIX: readonly FusionDetector[] = ["fakespot", "tmr", "modernbert", "lite", "perplexity", "binoculars"];
 
 /**
  * Below this displayed P(AI) the corner card shrinks to a dim dot. 0 = never
@@ -376,11 +382,16 @@ export const ALL_TIER_DETECTORS: FusionDetector[] = ["fakespot", "tmr", "modernb
 export const CHIP_AUTO_HIDE_DEFAULT = 0;
 
 export const DEFAULT_TIERS: TierSettings = {
-  quickDetectors: ["tmr"],
+  // v7 (docs/calibration.md "Accuracy pass (2026-10)"): tabularis ranks better
+  // than TMR on our web set (AUROC 0.900 vs 0.880) and far better on unseen
+  // text (MAGE 0.894 vs 0.770), and rarely flags human text.
+  quickDetectors: ["tabularis"],
   // Measured (docs/calibration.md "Deep check"): all six averaged ranks no
   // better than Fakespot + TMR and catches less (63% vs 68% of AI text, filter
   // recall 11% vs 54%); nothing beat the pair. Deep = the pair on the whole page.
-  deepDetectors: ["fakespot", "tmr"],
+  // v7: desklib + tabularis replaces Fakespot + TMR (web set 0.922 vs 0.913;
+  // unseen MAGE text 0.947 vs 0.802, human texts flagged 2% vs 16%).
+  deepDetectors: ["desklib", "tabularis"],
   quickMaxTokens: 1024,
   autoRunQuick: true,
   confirmQuick: true,
@@ -520,15 +531,27 @@ export function migrateSettings(merged: Settings, stored: Partial<Settings> | un
     // v6: the old Deep default (all six) moves to the measured best pair; a
     // hand-picked Deep set is kept.
     const d = out.tiers?.deepDetectors ?? [];
-    if (d.length === ALL_TIER_DETECTORS.length && ALL_TIER_DETECTORS.every((x) => d.includes(x))) {
+    if (d.length === PRE_V7_ALL_SIX.length && PRE_V7_ALL_SIX.every((x) => d.includes(x))) {
       out.tiers = { ...out.tiers, deepDetectors: [...DEFAULT_TIERS.deepDetectors] };
     }
+    out.settingsVersion = SETTINGS_VERSION;
+  }
+  if (stored && (stored.settingsVersion ?? 1) < 7) {
+    // v7 (accuracy pass, docs/calibration.md "Accuracy pass (2026-10)"): the
+    // old defaults move to the measured better models -- Quick TMR ->
+    // tabularis, Deep and Fusion Fakespot + TMR -> desklib + tabularis.
+    // Hand-picked sets are kept.
+    const same = (a: readonly FusionDetector[] | undefined, b: readonly FusionDetector[]) =>
+      !!a && a.length === b.length && b.every((x) => a.includes(x));
+    if (same(out.tiers?.quickDetectors, ["tmr"])) out.tiers = { ...out.tiers, quickDetectors: [...DEFAULT_TIERS.quickDetectors] };
+    if (same(out.tiers?.deepDetectors, ["fakespot", "tmr"])) out.tiers = { ...out.tiers, deepDetectors: [...DEFAULT_TIERS.deepDetectors] };
+    if (same(out.fusion?.detectors, ["fakespot", "tmr"])) out.fusion = { ...out.fusion, detectors: [...DEFAULT_FUSION.detectors] };
     out.settingsVersion = SETTINGS_VERSION;
   }
   return out;
 }
 
-const FUSION_DETECTORS: readonly FusionDetector[] = ["fakespot", "tmr", "lite", "modernbert", "perplexity", "binoculars"];
+const FUSION_DETECTORS: readonly FusionDetector[] = ["desklib", "tabularis", "fakespot", "tmr", "lite", "modernbert", "perplexity", "binoculars"];
 const FUSION_METHODS: readonly FusionMethod[] = ["weighted", "logodds", "vote", "max"];
 
 /** Drops unknown detectors/methods (e.g. from a newer version synced in), never returns an empty set. */

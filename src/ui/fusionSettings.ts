@@ -19,8 +19,10 @@ import {
 } from "../shared/settings";
 
 export const FUSION_DETECTOR_INFO: Record<FusionDetector, { name: string; blurb: string; experimental?: boolean }> = {
-  fakespot: { name: DETECTOR_LABELS.fakespot, blurb: "Mozilla/Fakespot RoBERTa classifier (Apache-2.0). Best single detector on our web test set." },
-  tmr: { name: DETECTOR_LABELS.tmr, blurb: "RoBERTa classifier trained on RAID (MIT). Used for the automatic pass." },
+  desklib: { name: DETECTOR_LABELS.desklib, blurb: "Large DeBERTa-v3 classifier trained on RAID (MIT). Most accurate on text it wasn't trained on; slow, runs on the CPU." },
+  tabularis: { name: DETECTOR_LABELS.tabularis, blurb: "ModernBERT classifier (MIT). Used for the automatic pass; rarely flags human text." },
+  fakespot: { name: DETECTOR_LABELS.fakespot, blurb: "Mozilla/Fakespot RoBERTa classifier (Apache-2.0). The previous main classifier." },
+  tmr: { name: DETECTOR_LABELS.tmr, blurb: "RoBERTa classifier trained on RAID (MIT). Fast on WebGPU." },
   modernbert: { name: DETECTOR_LABELS.modernbert, blurb: "ModernBERT classifier trained on RAID + MAGE (Apache-2.0)." },
   lite: { name: DETECTOR_LABELS.lite, blurb: "Small, fast e5 classifier (MIT)." },
   perplexity: { name: DETECTOR_LABELS.perplexity, blurb: "How predictable the text is to DistilGPT-2 (Apache-2.0)." },

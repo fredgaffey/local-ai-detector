@@ -82,9 +82,9 @@ describe("settings migration", () => {
     expect(out.useWebGPU).toBe(false);
     expect(out.fusion).toEqual({ detectors: ["tmr"], method: "max" });
   });
-  it("v2 settings on the old Quick defaults move to TMR and the always-present card", () => {
+  it("v2 settings on the old Quick defaults move (via TMR, v3) to tabularis (v7) and the always-present card", () => {
     const out = merged({ settingsVersion: 2, tiers: { quickDetectors: ["lite"], deepDetectors: ["tmr"], autoRunQuick: true, confirmQuick: true, quickMaxTokens: 1024, confirmAt: 0.5 }, chipAutoHideThreshold: 0.35 });
-    expect(out.tiers.quickDetectors).toEqual(["tmr"]);
+    expect(out.tiers.quickDetectors).toEqual(["tabularis"]);
     expect(out.tiers.deepDetectors).toEqual(["tmr"]);
     expect(out.chipAutoHideThreshold).toBe(0);
     expect(out.settingsVersion).toBe(SETTINGS_VERSION);

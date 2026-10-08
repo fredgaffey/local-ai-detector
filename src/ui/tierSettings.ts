@@ -19,7 +19,7 @@ import {
 } from "../shared/settings";
 import { FUSION_DETECTOR_INFO } from "./fusionSettings";
 
-export const DETECTOR_ORDER: FusionDetector[] = ["fakespot", "tmr", "modernbert", "lite", "perplexity", "binoculars"];
+export const DETECTOR_ORDER: FusionDetector[] = ["desklib", "tabularis", "fakespot", "tmr", "modernbert", "lite", "perplexity", "binoculars"];
 
 type Column = "fusion" | "quick" | "deep";
 const COLUMNS: { id: Column; label: string; title: string }[] = [

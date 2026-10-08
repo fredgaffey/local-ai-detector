@@ -151,6 +151,43 @@ export const DEFAULT_MODELS: Record<ModelSlot, ModelSpec> = {
     sizes: { q8: 125_465_750 + 3_558_896 + 1_260 * KB },
     maxLength: 512,
   },
+  classifierDesklib: {
+    slot: "classifierDesklib",
+    label: "desklib AI-text detector v1.01 (DeBERTa-v3-large, RAID)",
+    // Our ONNX export of desklib/ai-text-detector-v1.01 (MIT): its custom head
+    // (mean pooling + one logit) rebuilt and exported as two logits [0, x], so
+    // softmax[1] == sigmoid(x); INT8 dynamic quantisation. Upstream publishes
+    // safetensors only. docs/calibration.md "Accuracy pass (2026-10)".
+    repo: "fredgaffey/desklib-ai-text-detector-v1.01-ONNX",
+    revision: "main",
+    task: "text-classification",
+    license: "mit",
+    upstream: "desklib/ai-text-detector-v1.01",
+    modelFileName: "model",
+    dtypes: { wasm: "q8", webgpuF16: "q8" },
+    wasmOnly: true,
+    // onnx/model_quantized.onnx 640,597,155 B; tokenizer.json 8,649,019 B (+ spm.model/configs 2,469,150 B).
+    sizes: { q8: 640_597_155 + 8_649_019 + 2_469_150 },
+    maxLength: 512,
+  },
+  classifierTabularis: {
+    slot: "classifierTabularis",
+    label: "tabularis AI-text detector (ModernBERT-base)",
+    // Our ONNX export of tabularisai/ai-text-detection (MIT), INT8 dynamic
+    // quantisation. ModernBERT gave constant outputs on WebGPU in fp16 (T7),
+    // so it runs on WASM.
+    repo: "fredgaffey/tabularis-ai-text-detection-ONNX",
+    revision: "main",
+    task: "text-classification",
+    license: "mit",
+    upstream: "tabularisai/ai-text-detection",
+    modelFileName: "model",
+    dtypes: { wasm: "q8", webgpuF16: "q8" },
+    wasmOnly: true,
+    // onnx/model_quantized.onnx 150,667,614 B; tokenizer.json 3,583,387 B (+ configs).
+    sizes: { q8: 150_667_614 + 3_583_387 + 3 * KB },
+    maxLength: 8192,
+  },
   perplexityLM: {
     slot: "perplexityLM",
     label: "DistilGPT-2 (perplexity)",
@@ -218,6 +255,8 @@ export const MODEL_SLOTS = Object.keys(DEFAULT_MODELS) as ModelSlot[];
 
 /** Model slots each Fusion detector needs. */
 export const DETECTOR_SLOTS: Record<FusionDetector, ModelSlot[]> = {
+  desklib: ["classifierDesklib"],
+  tabularis: ["classifierTabularis"],
   fakespot: ["classifierFakespot"],
   tmr: ["classifier"],
   lite: ["classifierLite"],
@@ -228,6 +267,8 @@ export const DETECTOR_SLOTS: Record<FusionDetector, ModelSlot[]> = {
 
 /** Short UI labels per detector. */
 export const DETECTOR_LABELS: Record<FusionDetector, string> = {
+  desklib: "desklib",
+  tabularis: "tabularis",
   fakespot: "Fakespot",
   tmr: "TMR",
   lite: "Lite (e5)",
@@ -265,7 +306,7 @@ export function detectorsForMode(mode: Mode, fusion?: FusionSpec): FusionSetting
     case "ensemble":
     default: {
       const f = fusionFrom(fusion);
-      const order: FusionDetector[] = ["fakespot", "tmr", "modernbert", "lite", "perplexity", "binoculars"];
+      const order: FusionDetector[] = ["desklib", "tabularis", "fakespot", "tmr", "modernbert", "lite", "perplexity", "binoculars"];
       return { detectors: order.filter((d) => f.detectors.includes(d)), method: f.method };
     }
   }
@@ -420,6 +461,9 @@ export function refKey(ref: ModelRef): string {
 export const DETECTOR_SPEED_MS_PER_1K_WORDS: Record<FusionDetector, { webgpu: number; wasm: number }> = {
   // T7 browser runs (Chrome 153, Apple M-series, 4 WASM threads), rounded up.
   // WASM-only detectors cost the same on either path.
+  // desklib / tabularis: provisional, scaled from Node timings against Fakespot.
+  desklib: { webgpu: 17000, wasm: 17000 },
+  tabularis: { webgpu: 4300, wasm: 4300 },
   fakespot: { webgpu: 2500, wasm: 2500 },
   tmr: { webgpu: 400, wasm: 2500 },
   lite: { webgpu: 200, wasm: 800 },

@@ -27,15 +27,29 @@ describe("fusionForTier", () => {
     expect(fusionForTier("deep", tiers)).toEqual({ detectors: ["binoculars"], method: "weighted" });
   });
 
-  it("defaults: quick is TMR, deep is the measured best pair (Fakespot + TMR)", () => {
-    expect(fusionForTier("quick", DEFAULT_TIERS).detectors).toEqual(["tmr"]);
-    expect(fusionForTier("deep", DEFAULT_TIERS).detectors).toEqual(["fakespot", "tmr"]);
+  it("defaults: quick is tabularis, deep is desklib + tabularis (v7 accuracy pass)", () => {
+    expect(fusionForTier("quick", DEFAULT_TIERS).detectors).toEqual(["tabularis"]);
+    expect(fusionForTier("deep", DEFAULT_TIERS).detectors).toEqual(["desklib", "tabularis"]);
+  });
+
+  it("v7 moves the old Quick/Deep/Fusion defaults to the new models, keeps hand-picked sets", () => {
+    const merged = (stored: Partial<Settings>) => migrateSettings({ ...DEFAULT_SETTINGS, ...stored } as Settings, stored);
+    const old = { ...DEFAULT_TIERS, quickDetectors: ["tmr"], deepDetectors: ["tmr", "fakespot"] } as Settings["tiers"];
+    const out = merged({ settingsVersion: 6, tiers: old, fusion: { detectors: ["fakespot", "tmr"], method: "weighted" } });
+    expect(out.tiers.quickDetectors).toEqual(["tabularis"]);
+    expect(out.tiers.deepDetectors).toEqual(["desklib", "tabularis"]);
+    expect(out.fusion.detectors).toEqual(["desklib", "tabularis"]);
+    const picked = { ...DEFAULT_TIERS, quickDetectors: ["lite"], deepDetectors: ["fakespot", "binoculars"] } as Settings["tiers"];
+    const kept = merged({ settingsVersion: 6, tiers: picked });
+    expect(kept.tiers.quickDetectors).toEqual(["lite"]);
+    expect(kept.tiers.deepDetectors).toEqual(["fakespot", "binoculars"]);
   });
 
   it("v6 moves the old all-six Deep default to the pair, keeps a hand-picked set", () => {
     const merged = (stored: Partial<Settings>) => migrateSettings({ ...DEFAULT_SETTINGS, ...stored } as Settings, stored);
-    const allSix = { ...DEFAULT_TIERS, deepDetectors: [...ALL_TIER_DETECTORS] };
-    expect(merged({ settingsVersion: 5, tiers: allSix }).tiers.deepDetectors).toEqual(["fakespot", "tmr"]);
+    const allSix = { ...DEFAULT_TIERS, deepDetectors: ["fakespot", "tmr", "modernbert", "lite", "perplexity", "binoculars"] } as Settings["tiers"];
+    expect(merged({ settingsVersion: 5, tiers: allSix }).tiers.deepDetectors).toEqual(DEFAULT_TIERS.deepDetectors);
+    expect(ALL_TIER_DETECTORS).toContain("desklib");
     const picked = { ...DEFAULT_TIERS, deepDetectors: ["fakespot", "binoculars"] as Settings["tiers"]["deepDetectors"] };
     expect(merged({ settingsVersion: 5, tiers: picked }).tiers.deepDetectors).toEqual(["fakespot", "binoculars"]);
   });
@@ -96,7 +110,7 @@ describe("settings migration: tiers", () => {
   });
 
   it("a valid stored choice survives migration untouched", () => {
-    const custom: TierSettings = { quickDetectors: ["tmr", "lite"], deepDetectors: ["fakespot", "tmr"], autoRunQuick: true, confirmQuick: false, quickMaxTokens: 2048, confirmAt: 0.5 };
+    const custom: TierSettings = { quickDetectors: ["tmr", "lite"], deepDetectors: ["fakespot", "binoculars"], autoRunQuick: true, confirmQuick: false, quickMaxTokens: 2048, confirmAt: 0.5 };
     expect(migrated({ tiers: custom }).tiers).toEqual(custom);
   });
 });

@@ -350,6 +350,8 @@ export async function analyzeBlocks(
   const outs = new Map<FusionDetector, { perSentence: Float64Array; overall: number; device: string; dtype: string }>();
   const counterRef: { c?: Counter } = {};
   const CLS_SLOT: Partial<Record<FusionDetector, ClassifierSlot>> = {
+    desklib: "classifierDesklib",
+    tabularis: "classifierTabularis",
     fakespot: "classifierFakespot",
     tmr: "classifier",
     lite: "classifierLite",
@@ -420,6 +422,8 @@ export async function analyzeBlocks(
   const weightOf = (d: FusionDetector) => (method === "weighted" ? cal.fusionWeights[d] : 1);
   const multi = detectors.length > 1;
   const SOURCE_OF: Record<FusionDetector, ScoreSource> = {
+    desklib: "classifier",
+    tabularis: "classifier",
     fakespot: "classifier",
     tmr: "classifier",
     lite: "classifier",
