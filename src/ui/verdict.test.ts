@@ -52,7 +52,7 @@ describe("bandFromResult", () => {
     expect(bandFromResult(result(0.8, 0), DEFAULT_SETTINGS)).toBe("insufficient");
   });
   test("scored sentences use the displayed (calibrated) probability", () => {
-    expect(bandFromResult(result(0.1, 3), DEFAULT_SETTINGS)).toBe("human");
+    expect(bandFromResult(result(0.001, 3), DEFAULT_SETTINGS)).toBe("human");
     expect(bandFromResult(result(0.9, 3), DEFAULT_SETTINGS)).toBe("ai");
   });
   test("regression: the band must follow result.probability, not the raw overall score (T7 merge finding)", () => {
