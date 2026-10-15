@@ -11,7 +11,7 @@ minutes.
 ### 1. Get the code and build it
 
 ```sh
-git clone https://github.com/freddygaffey/ai_detector.git local-ai-detector
+git clone https://github.com/fredgaffey/local-ai-detector.git
 cd local-ai-detector
 npm ci
 npm run build            # Chrome/Edge/Brave -> .output/chrome-mv3

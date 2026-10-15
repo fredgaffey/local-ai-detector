@@ -10,8 +10,8 @@ listing claim changes** (the built `.output/chrome-mv3/manifest.json` is the sou
 | Permission justifications (paste into "Permissions justification") | [store/permissions.md](store/permissions.md) |
 | Single-purpose statement | [store/permissions.md#single-purpose-statement-chrome-web-store](store/permissions.md#single-purpose-statement-chrome-web-store) |
 | Data usage form: declare **no data collected** | [store/permissions.md#data-usage-disclosures-chrome-web-store-data-collection-form](store/permissions.md#data-usage-disclosures-chrome-web-store-data-collection-form) |
-| Privacy policy URL | https://github.com/freddygaffey/local-ai-detector/blob/main/PRIVACY.md |
-| Homepage / support URL | https://github.com/freddygaffey/local-ai-detector |
+| Privacy policy URL | https://github.com/fredgaffey/local-ai-detector/blob/main/PRIVACY.md |
+| Homepage / support URL | https://github.com/fredgaffey/local-ai-detector |
 | Screenshots / promo tiles | [store/screenshots/](store/screenshots/) (1280×800), [store/promo/](store/promo/) |
 | Publishing steps | [docs/release.md](docs/release.md) |
 | Firefox (AMO) listing | [store/amo-listing.md](store/amo-listing.md) |

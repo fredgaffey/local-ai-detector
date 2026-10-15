@@ -87,8 +87,8 @@ OPEN SOURCE
 
 MIT-licensed. Every bundled library and model is under an open licence
 (MIT/Apache-2.0/MPL-2.0) — nothing gated or non-commercial. Source code,
-architecture notes, and the full calibration methodology are linked from the
-extension's Options page.
+architecture notes, and the full calibration methodology:
+https://github.com/fredgaffey/local-ai-detector
 ```
 
 ## Notes for whoever fills in the AMO form
@@ -102,7 +102,7 @@ extension's Options page.
   in the submission flow, and [`../BUILD_FROM_SOURCE.md`](../BUILD_FROM_SOURCE.md)
   (included in that zip) for the reviewer-facing build instructions.
 - License field on AMO: **MIT**.
-- Support/homepage URL: the source repository.
+- Homepage and support URLs: https://github.com/fredgaffey/local-ai-detector (support: …/issues).
 - Privacy policy: paste in the text of, or a stable link to,
   [`../PRIVACY.md`](../PRIVACY.md).
 

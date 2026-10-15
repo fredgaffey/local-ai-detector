@@ -76,7 +76,8 @@ the source code.
 OPEN SOURCE
 
 MIT licensed. Every bundled model and library is openly licensed. Source code,
-documentation and the privacy policy are linked from the Options page.
+documentation and the privacy policy:
+https://github.com/fredgaffey/local-ai-detector
 ```
 
 ## Notes for whoever fills in the dashboard

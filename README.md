@@ -285,7 +285,7 @@ yourself — see [`docs/install.md`](docs/install.md) for full details,
 screenshots, and troubleshooting. Quick version:
 
 ```sh
-git clone https://github.com/freddygaffey/ai_detector.git local-ai-detector
+git clone https://github.com/fredgaffey/local-ai-detector.git
 cd local-ai-detector
 npm ci
 npm run build            # -> .output/chrome-mv3

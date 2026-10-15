@@ -57,7 +57,7 @@ The experimental voice check (on by default; listed, ticked, in the same
 download checklist as the text models) needs one extra model file, which is
 not on Hugging Face. It is downloaded **once**, only after you've consented
 to model downloads, from this project's own GitHub Release:
-`https://github.com/freddygaffey/local-ai-detector/releases/download/models-v1/<file>.onnx`,
+`https://github.com/fredgaffey/local-ai-detector/releases/download/models-v1/<file>.onnx`,
 which GitHub redirects to `release-assets.githubusercontent.com` for the
 bytes. The request carries no cookies (`credentials: "omit"`). The file's
 size and sha256 are checked before it is used. Nothing else is ever fetched

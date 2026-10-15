@@ -29,7 +29,7 @@ export interface VoiceModelSpec {
   preemphasis: boolean;
 }
 
-const RELEASE = "https://github.com/freddygaffey/local-ai-detector/releases/download/models-v1/";
+const RELEASE = "https://github.com/fredgaffey/local-ai-detector/releases/download/models-v1/";
 
 export const VOICE_MODELS: Record<VoiceModelId, VoiceModelSpec> = {
   voiceSpectraAasist3: {
