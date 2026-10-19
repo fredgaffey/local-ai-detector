@@ -20,7 +20,21 @@ export interface TranscriptChipCallbacks {
   onSeek(seconds: number): void;
   /** Model download not consented to yet ("consent" state): grants it and retries. */
   onConsent(): void;
+  /** "Copy transcript": resolves with what happened, for the button's label. */
+  onCopy(): Promise<CopyResult>;
 }
+
+/** "click-again": the text is ready but the browser wants a fresh click to copy it. */
+export type CopyResult = "copied" | "click-again" | "none" | "error";
+
+const COPY_LABELS: Record<CopyResult | "idle" | "busy", string> = {
+  idle: "Copy transcript",
+  busy: "Copying…",
+  copied: "Copied",
+  "click-again": "Click to copy",
+  none: "No transcript",
+  error: "Couldn't copy",
+};
 
 export interface TranscriptChipApi {
   setReport(report: TranscriptReport | null): void;
@@ -45,6 +59,10 @@ const CSS = `
   .action { font: inherit; font-weight: 600; cursor: pointer; border-radius: 999px; padding: 4px 12px;
     border: 1px solid var(--link); background: var(--bg); color: var(--link); }
   .action:hover, .action:focus-visible { background: var(--link); color: var(--bg); outline: none; }
+  .copy { font-weight: 500; border-radius: 999px; padding: 3px 10px; border: 1px solid var(--line);
+    background: var(--bg); color: var(--muted); }
+  .copy:hover, .copy:focus-visible { border-color: var(--fg); color: var(--fg); outline: none; }
+  .copy[disabled] { cursor: default; }
   .label { border-radius: 999px; padding: 3px 10px; background: var(--warnbg); color: var(--warnfg); font-weight: 600; }
   .details { margin-top: 6px; max-width: 560px; border: 1px solid var(--line); border-radius: 10px; padding: 8px;
     background: var(--bg); color: var(--fg); font: 12px/1.4 Roboto, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
@@ -144,7 +162,25 @@ export function createTranscriptChip(cb: TranscriptChipCallbacks): TranscriptChi
   const details = document.createElement("div");
   details.className = "details";
   details.hidden = true;
-  row.append(chip, label);
+  const copy = document.createElement("button");
+  copy.type = "button";
+  copy.className = "copy";
+  copy.title = "Copy the whole transcript, with timestamps, to the clipboard";
+  copy.textContent = COPY_LABELS.idle;
+  let copyReset: ReturnType<typeof setTimeout> | undefined;
+  const setCopy = (state: keyof typeof COPY_LABELS) => {
+    clearTimeout(copyReset);
+    copy.textContent = COPY_LABELS[state];
+    copy.disabled = state === "busy";
+    // "Click to copy" waits for the click; the rest settle back.
+    if (state !== "idle" && state !== "busy" && state !== "click-again") copyReset = setTimeout(() => setCopy("idle"), 2500);
+  };
+  copy.addEventListener("click", (e) => {
+    e.stopPropagation();
+    setCopy("busy");
+    cb.onCopy().then(setCopy, () => setCopy("error"));
+  });
+  row.append(chip, copy, label);
   wrap.append(row, details);
   shadow.append(style, wrap);
 
@@ -293,7 +329,10 @@ export function createTranscriptChip(cb: TranscriptChipCallbacks): TranscriptChi
     setReport(r) {
       const videoChanged = r?.videoId !== report?.videoId;
       report = r;
-      if (videoChanged) details.hidden = true;
+      if (videoChanged) {
+        details.hidden = true;
+        setCopy("idle");
+      }
       render();
     },
     remount() {

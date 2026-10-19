@@ -25,7 +25,9 @@ import { decidePowerAction, readBatteryState, readPressureState } from "../../po
 import { acquireTranscript, isYouTubeHost, readDisclosure, videoFromUrl, type Acquired, type VideoRef } from "./acquire";
 import { buildTranscriptBlocks, sampleBlocks, skipQuickPass, toTextBlocks, type TranscriptBlock } from "./chunk";
 import { looksEnglish } from "./transcript";
-import { createTranscriptChip, type TranscriptChipApi } from "./ui";
+import { createTranscriptChip, type CopyResult, type TranscriptChipApi } from "./ui";
+import { copyText, transcriptToText } from "./exportTranscript";
+import type { Transcript } from "./transcript";
 import { youTubeVideo } from "../../voice/content";
 
 let settings: Settings = DEFAULT_SETTINGS;
@@ -37,6 +39,10 @@ let runToken = 0;
 let pageAcquire: (() => Promise<Acquired>) | null = null;
 /** The page router's gate (src/content/main.ts): false = this page type gets no transcript chip. */
 let pageAllowed: () => boolean = () => true;
+/** The last transcript read (by a check or a copy), so copying doesn't fetch it again. */
+let lastTranscript: Transcript | null = null;
+/** Text fetched for a copy whose click had gone stale: the next click copies it. */
+let pendingCopy: { videoId: string; text: string } | null = null;
 
 export function setTranscriptGate(fn: () => boolean): void {
   pageAllowed = fn;
@@ -63,6 +69,7 @@ function reconcileChip(): void {
       onRun: () => void run("fast", true),
       onDeep: () => void run("full", true),
       onSeek: seek,
+      onCopy: copyTranscript,
       onConsent: () => {
         // Same global consent the popup's "Download & enable" sets; grant it
         // and retry with the full/Deep pass, now that everything's allowed.
@@ -94,6 +101,45 @@ function snippet(text: string, words = 12): string {
   return w.length > words ? `${w.slice(0, words).join(" ")}…` : w.join(" ");
 }
 
+function videoTitle(): string | undefined {
+  const t = document.querySelector("ytd-watch-metadata #title")?.textContent?.trim() || document.title.replace(/ - YouTube$/, "").trim();
+  return t || undefined;
+}
+
+/** The current video's transcript as text on the clipboard. */
+async function copyTranscript(): Promise<CopyResult> {
+  const v = video;
+  if (!v) return "none";
+  if (pendingCopy?.videoId === v.videoId) {
+    const ok = await copyText(pendingCopy.text);
+    if (ok) pendingCopy = null;
+    return ok ? "copied" : "error";
+  }
+  let t = lastTranscript?.videoId === v.videoId ? lastTranscript : null;
+  if (!t) {
+    const startedAt = performance.now();
+    const got = v.kind === "page" ? await (pageAcquire?.() ?? Promise.resolve<Acquired>({ status: "none" })) : await acquireTranscript(document, v);
+    if (video?.videoId !== v.videoId) return "error";
+    if (got.status === "none") return "none";
+    if (got.status !== "ok" || got.transcript.cues.length === 0) return "error";
+    t = lastTranscript = { ...got.transcript, videoId: v.videoId };
+    const text = exportText(t);
+    // The browser only lets a page write the clipboard shortly after a click.
+    if (performance.now() - startedAt < 4000 && (await copyText(text))) return "copied";
+    pendingCopy = { videoId: v.videoId, text };
+    return "click-again";
+  }
+  return (await copyText(exportText(t))) ? "copied" : "error";
+}
+
+function exportText(t: Transcript): string {
+  const yt = video?.kind !== "page";
+  return transcriptToText(t.cues, {
+    title: yt ? videoTitle() : document.title || undefined,
+    url: yt ? `https://www.youtube.com/watch?v=${t.videoId}` : location.href,
+  });
+}
+
 function disclosureNow(): string | null {
   try {
     return readDisclosure(document);
@@ -115,6 +161,7 @@ async function run(pass: "fast" | "full", allowOpen: boolean): Promise<void> {
     if (got.status === "none") return publish({ ...base, state: "none", segments: [] });
     if (got.status === "unavailable") return publish({ ...base, state: "error", error: "Couldn't read the transcript" });
     const t = got.transcript;
+    lastTranscript = { ...t, videoId: v.videoId };
     const fullText = t.cues.map((c) => c.text).join(" ");
     if ((t.language && !/^en\b/i.test(t.language)) || !looksEnglish(fullText)) {
       return publish({ ...base, state: "not-english", language: t.language, source: t.source, segments: [] });

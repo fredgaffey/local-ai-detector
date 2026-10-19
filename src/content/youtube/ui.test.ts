@@ -40,7 +40,7 @@ describe("transcript chip: consent state", () => {
   test("shows an inline, already-visible download action sized from the background's quote", () => {
     const capture = captureNextShadowRoot();
     const onConsent = vi.fn();
-    const chip = createTranscriptChip({ onRun: () => {}, onDeep: () => {}, onSeek: () => {}, onConsent });
+    const chip = createTranscriptChip({ onRun: () => {}, onDeep: () => {}, onSeek: () => {}, onConsent, onCopy: async () => "copied" });
     const root = capture.get();
 
     chip.setReport(consentReport);

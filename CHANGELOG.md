@@ -10,6 +10,7 @@ All notable changes to this project are documented here.
 - New setting: re-check Quick results with the Deep models from N% (Options → Tiers).
 
 - **PDFs**: open the popup on a PDF and click "Check this PDF", or drop a PDF file into "Paste text". The text is read on your device with Mozilla's pdf.js and scored; sentences can't be highlighted inside the browser's PDF viewer.
+- **Copy transcript**: a button beside the YouTube transcript chip (and on page videos with captions) copies the whole transcript to the clipboard, in paragraphs with timestamps, plus the title and link. Works in Chrome and Firefox; no new permission.
 - YouTube chips follow YouTube's own light/dark theme instead of the system's.
 
 - Chrome: **Run on every site** (Options, or "Auto-check on every site" in the popup on a site outside the built-in list). One browser permission prompt; the automatic check and image checks then work on every site. Revoke it any time from Chrome's extension settings. Nothing about what's read or sent changes: everything stays on your device.
